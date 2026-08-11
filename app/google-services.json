@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "717777548137",
+    "project_id": "courtconnect-ec2dc",
+    "storage_bucket": "courtconnect-ec2dc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717777548137:android:32faf8c773ac49480e43f8",
+        "android_client_info": {
+          "package_name": "com.example.courtconnect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAAEw001l2HHgRuCcP-DsaSMDaAAWZXDKA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
