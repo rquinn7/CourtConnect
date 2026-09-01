@@ -16,6 +16,8 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.material3.Text
 import androidx.compose.material3.OutlinedTextField
@@ -32,16 +34,19 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.courtconnect.R
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
 
 @Preview(showSystemUi = true)
 @Composable
 fun LoginScreen() {
     var email by remember() { mutableStateOf("") }
     var password by remember() { mutableStateOf("") }
-
+    var passwordVisible by remember { mutableStateOf(false) }
 
         Column(
             modifier = Modifier.fillMaxSize()
@@ -82,7 +87,23 @@ fun LoginScreen() {
                     focusedBorderColor = Color(0xFF5B9808),
                     focusedLabelColor = Color(0xFF5B9808)
                 ),
-                visualTransformation = PasswordVisualTransformation()
+                visualTransformation = if (passwordVisible) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            passwordVisible = !passwordVisible
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Visibility,
+                            contentDescription = "Show password"
+                        )
+                    }
+                }
 
             )
 
