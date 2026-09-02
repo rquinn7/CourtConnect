@@ -55,6 +55,8 @@ fun CreateAccountScreen() {
     var email by remember() {mutableStateOf("")}
     var password by remember() {mutableStateOf("")}
     var passwordVisible by remember { mutableStateOf(false) }
+    var passwordConfirmed by remember { mutableStateOf("") }
+    var passwordError by remember {mutableStateOf(false)}
 
 
     Column(
@@ -167,11 +169,55 @@ fun CreateAccountScreen() {
 
         )
 
+        OutlinedTextField(
+            value = passwordConfirmed,
+            onValueChange = { passwordConfirmed = it },
+            label = { Text("Confirm Password") },
+            isError = passwordError,
+            shape = RoundedCornerShape(25.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF5B9808),
+                focusedLabelColor = Color(0xFF5B9808)
+            ),
+            visualTransformation = if (passwordVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
+            trailingIcon = {
+                IconButton(
+                    onClick = {
+                        passwordVisible = !passwordVisible
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Visibility,
+                        contentDescription = "Show password"
+                    )
+                }
+            }
+
+        )
+
+        if (passwordError) {
+            Text(
+                text = "Passwords do not match",
+                color = Color.Red,
+                fontSize = 14.sp
+            )
+        }
+
         Spacer(Modifier.height(10.dp))
 
         Button(
             onClick = {
-                // login logic will go here later
+                if (password == passwordConfirmed) {
+                    passwordError = false
+                    // create account later
+                } else {
+                    // show password mismatch error
+                    passwordError = true
+                }
             },
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF5B9808)
