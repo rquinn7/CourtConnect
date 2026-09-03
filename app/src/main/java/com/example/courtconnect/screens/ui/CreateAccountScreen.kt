@@ -3,6 +3,7 @@
 package com.example.courtconnect.screens.ui
 
 import android.util.Log
+import android.util.Patterns
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -219,6 +220,11 @@ fun CreateAccountScreen() {
                     passwordError = true
                 }
             },
+            enabled = Patterns.EMAIL_ADDRESS.matcher(email).matches()
+                    && password.isNotBlank()
+                    && firstName.isNotBlank()
+                    && lastName.isNotBlank()
+                    && passwordConfirmed.isNotBlank(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF5B9808)
             ),
