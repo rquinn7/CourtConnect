@@ -45,9 +45,10 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-@Preview(showSystemUi = true)
 @Composable
-fun ForgotPasswordScreen() {
+fun ForgotPasswordScreen(
+    onBackToLogin: () -> Unit
+) {
     var email by remember() { mutableStateOf("") }
 
 
@@ -89,7 +90,6 @@ fun ForgotPasswordScreen() {
 
 
 
-        Spacer(modifier = Modifier.height(8.dp))
 
 
         OutlinedTextField(
@@ -107,6 +107,8 @@ fun ForgotPasswordScreen() {
             )
         )
 
+        Spacer(modifier = Modifier.height(8.dp))
+
         Button(
             onClick = {
                 // login logic will go here later
@@ -118,6 +120,18 @@ fun ForgotPasswordScreen() {
         ) {
             Text("Reset Password")
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        ClickableText(
+            text = AnnotatedString("Remember your password? Return to login"),
+            style = TextStyle(
+                color = Color(0xFFFF5722)
+            ),
+            onClick = {
+                onBackToLogin()
+            }
+        )
     }
 }
 

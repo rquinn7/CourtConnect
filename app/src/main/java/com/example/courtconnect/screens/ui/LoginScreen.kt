@@ -42,9 +42,12 @@ import com.example.courtconnect.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 
-@Preview(showSystemUi = true)
+//@Preview(showSystemUi = true)
 @Composable
-fun LoginScreen() {
+fun LoginScreen(
+    onCreateAccountClick: () -> Unit,
+    onForgotPasswordClick: () -> Unit
+) {
     var email by remember() { mutableStateOf("") }
     var password by remember() { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
@@ -133,6 +136,7 @@ fun LoginScreen() {
                 ),
                 onClick = { offset ->
                     Log.d("ClickableText", "$offset -th character is clicked.")
+                    onCreateAccountClick()
                 }
             )
 
@@ -145,6 +149,7 @@ fun LoginScreen() {
                 ),
                 onClick = { offset ->
                     Log.d("ClickableText", "$offset -th character is clicked.")
+                    onForgotPasswordClick()
                 }
             )
 

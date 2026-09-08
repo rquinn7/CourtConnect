@@ -48,9 +48,10 @@ import androidx.compose.material3.TextField
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-@Preview(showSystemUi = true)
 @Composable
-fun CreateAccountScreen() {
+fun CreateAccountScreen(
+    onLoginClick: () -> Unit
+) {
     var firstName by remember() { mutableStateOf("") }
     var lastName by remember() { mutableStateOf("") }
     var email by remember() {mutableStateOf("")}
@@ -235,6 +236,18 @@ fun CreateAccountScreen() {
         ) {
             Text("Create Account")
         }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        ClickableText(
+            text = AnnotatedString("Already have an account? Login"),
+            style = TextStyle(
+                color = Color(0xFFFF5722)
+            ),
+            onClick = {
+                onLoginClick()
+            }
+        )
 
     }
 }
