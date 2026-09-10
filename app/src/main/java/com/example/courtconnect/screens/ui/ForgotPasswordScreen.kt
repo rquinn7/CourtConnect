@@ -44,13 +44,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun ForgotPasswordScreen(
     onBackToLogin: () -> Unit
 ) {
     var email by remember() { mutableStateOf("") }
+    var message by remember { mutableStateOf("") }
 
+    //firebase stuff
+    val auth = FirebaseAuth.getInstance()
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -95,7 +99,10 @@ fun ForgotPasswordScreen(
         OutlinedTextField(
             modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
             value = email,
-            onValueChange = { email = it },
+            onValueChange = {
+                email = it
+                message = ""
+            },
             label = { Text("Email Linked to Account") },
             shape = RoundedCornerShape(25.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -111,7 +118,24 @@ fun ForgotPasswordScreen(
 
         Button(
             onClick = {
-                // login logic will go here later
+                auth.sendPasswordResetEmail(email)
+                    .addOnCompleteListener { task ->
+
+                        if (task.isSuccessful) {
+                            message = "Password reset email sent."
+                            Log.d(
+                                "FirebaseAuth",
+                                "Password reset email sent."
+                            )
+                        } else {
+                            message = "Unable to send reset email."
+                            Log.e(
+                                "FirebaseAuth",
+                                "Password reset failed",
+                                task.exception
+                            )
+                        }
+                    }
             },
             enabled = Patterns.EMAIL_ADDRESS.matcher(email).matches(),
             colors = ButtonDefaults.buttonColors(
@@ -132,6 +156,12 @@ fun ForgotPasswordScreen(
                 onBackToLogin()
             }
         )
+
+        if (message.isNotBlank()) {
+            Text(
+                text = message
+            )
+        }
     }
 }
 

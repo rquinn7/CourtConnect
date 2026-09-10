@@ -2,6 +2,7 @@
 
 package com.example.courtconnect.screens.ui
 
+import android.annotation.SuppressLint
 import android.util.Log
 import android.util.Patterns
 import androidx.compose.foundation.Image
@@ -41,16 +42,24 @@ import androidx.compose.ui.unit.dp
 import com.example.courtconnect.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
+import com.google.firebase.auth.FirebaseAuth
+import com.example.courtconnect.screens.ui.HomeScreen
+
 
 //@Preview(showSystemUi = true)
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun LoginScreen(
     onCreateAccountClick: () -> Unit,
-    onForgotPasswordClick: () -> Unit
-) {
+    onForgotPasswordClick: () -> Unit,
+    onLoginSuccess: () -> Unit
+)  {
     var email by remember() { mutableStateOf("") }
     var password by remember() { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
+
+    // firebase stuff
+    val auth = FirebaseAuth.getInstance()
 
         Column(
             modifier = Modifier.fillMaxSize()
@@ -115,7 +124,21 @@ fun LoginScreen(
 
             Button(
                 onClick = {
-                    // login logic will go here later
+                    auth.signInWithEmailAndPassword(
+                        email,
+                        password
+                    ).addOnCompleteListener { task ->
+
+                        if (task.isSuccessful) {
+                            onLoginSuccess()
+                        } else {
+                            Log.e(
+                                "FirebaseAuth",
+                                "Login failed",
+                                task.exception
+                            )
+                        }
+                    }
                 },
                 enabled = Patterns.EMAIL_ADDRESS.matcher(email).matches()
                         && password.isNotBlank(),

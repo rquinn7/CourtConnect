@@ -47,6 +47,8 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.TextField
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun CreateAccountScreen(
@@ -60,6 +62,9 @@ fun CreateAccountScreen(
     var passwordConfirmed by remember { mutableStateOf("") }
     var passwordError by remember {mutableStateOf(false)}
 
+    // Firebase Stuff
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -216,6 +221,40 @@ fun CreateAccountScreen(
                 if (password == passwordConfirmed) {
                     passwordError = false
                     // create account later
+                    // firebase below
+                    auth.createUserWithEmailAndPassword(
+                        email,
+                        password
+                    ).addOnCompleteListener { task ->
+
+                        if (task.isSuccessful) {
+
+                            val user = auth.currentUser
+
+                            if (user != null) {
+
+                                val userData = hashMapOf(
+                                    "firstName" to firstName,
+                                    "lastName" to lastName,
+                                    "email" to email
+                                )
+
+                                db.collection("users")
+                                    .document(user.uid)
+                                    .set(userData)
+                                    .addOnSuccessListener {
+                                        onLoginClick()
+                                    }
+                                    .addOnFailureListener { exception ->
+                                        Log.e(
+                                            "Firestore",
+                                            "Failed to save user information",
+                                            exception
+                                        )
+                                    }
+                            }
+                        }
+                    }
                 } else {
                     // show password mismatch error
                     passwordError = true

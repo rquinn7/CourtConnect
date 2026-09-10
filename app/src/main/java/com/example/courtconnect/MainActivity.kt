@@ -21,6 +21,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.courtconnect.screens.ui.LoginScreen
 import com.example.courtconnect.screens.ui.CreateAccountScreen
 import com.example.courtconnect.screens.ui.ForgotPasswordScreen
+import com.example.courtconnect.screens.ui.HomeScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.graphics.Color
@@ -45,6 +46,13 @@ class MainActivity : ComponentActivity() {
                             },
                             onForgotPasswordClick = {
                                 navController.navigate("forgotPassword")
+                            },
+                            onLoginSuccess = {
+                                navController.navigate("home") {
+                                    popUpTo("login") {
+                                        inclusive = true
+                                    }
+                                }
                             }
                         )
                     }
@@ -63,6 +71,10 @@ class MainActivity : ComponentActivity() {
                                 navController.popBackStack()
                             }
                         )
+                    }
+
+                    composable("home") {
+                        HomeScreen()
                     }
                 }
             }
