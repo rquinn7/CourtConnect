@@ -54,6 +54,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 fun CreateAccountScreen(
     onLoginClick: () -> Unit
 ) {
+    // variables used to hold first name, last name, email,
+    // password, password visible, password confirmed and
+    // password error
     var firstName by remember() { mutableStateOf("") }
     var lastName by remember() { mutableStateOf("") }
     var email by remember() {mutableStateOf("")}
@@ -62,8 +65,10 @@ fun CreateAccountScreen(
     var passwordConfirmed by remember { mutableStateOf("") }
     var passwordError by remember {mutableStateOf(false)}
 
-    // Firebase Stuff
+    // variables used for firebase
+    // used to authorize account and access to firebase
     val auth = FirebaseAuth.getInstance()
+    // used to connect to firestone which is database that holds all account information
     val db = FirebaseFirestore.getInstance()
 
     Column(
@@ -74,6 +79,7 @@ fun CreateAccountScreen(
     )
     {
 
+        // display logo
         Image(
             painter = painterResource(id = R.drawable.logo_bg_remove),
             contentDescription = "CourtConnect Logo",
@@ -106,7 +112,7 @@ fun CreateAccountScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-
+        // first name text field
         OutlinedTextField(
             modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
             value = firstName,
@@ -119,6 +125,7 @@ fun CreateAccountScreen(
             )
         )
 
+        // last name text field
         OutlinedTextField(
             modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
             value = lastName,
@@ -131,6 +138,7 @@ fun CreateAccountScreen(
             )
         )
 
+        // email text field
         OutlinedTextField(
             modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
             value = email,
@@ -146,7 +154,7 @@ fun CreateAccountScreen(
             )
         )
 
-
+        // password text field
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -176,6 +184,9 @@ fun CreateAccountScreen(
 
         )
 
+        // password confirmed text field
+        // used to make sure passwords match when creating account
+        // if not display error, which is password error
         OutlinedTextField(
             value = passwordConfirmed,
             onValueChange = { passwordConfirmed = it },
@@ -216,6 +227,7 @@ fun CreateAccountScreen(
 
         Spacer(Modifier.height(10.dp))
 
+        // button which will create the account in firebase
         Button(
             onClick = {
                 if (password == passwordConfirmed) {
@@ -233,6 +245,7 @@ fun CreateAccountScreen(
 
                             if (user != null) {
 
+                                // creates the user account in firestore
                                 val userData = hashMapOf(
                                     "firstName" to firstName,
                                     "lastName" to lastName,
@@ -278,6 +291,7 @@ fun CreateAccountScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // clickable text used to go back to login page if the user remembers their password
         ClickableText(
             text = AnnotatedString("Already have an account? Login"),
             style = TextStyle(

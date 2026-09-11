@@ -54,11 +54,13 @@ fun LoginScreen(
     onForgotPasswordClick: () -> Unit,
     onLoginSuccess: () -> Unit
 )  {
+    // create variables for email, password and password visible
+    // password visible is used for showing the password when clicking eye icon on field
     var email by remember() { mutableStateOf("") }
     var password by remember() { mutableStateOf("") }
     var passwordVisible by remember { mutableStateOf(false) }
 
-    // firebase stuff
+    // used for firebase authorization to make sure account is in firebase
     val auth = FirebaseAuth.getInstance()
 
         Column(
@@ -69,6 +71,7 @@ fun LoginScreen(
         )
         {
 
+            // displays logo
             Image(
                 painter = painterResource(id = R.drawable.logo_bg_remove),
                 contentDescription = "CourtConnect Logo",
@@ -77,6 +80,7 @@ fun LoginScreen(
                     .size(300.dp)
             )
 
+            // email text field
             OutlinedTextField(
                 modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
                 value = email,
@@ -92,6 +96,7 @@ fun LoginScreen(
             )
 
 
+            // password text field
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -105,6 +110,7 @@ fun LoginScreen(
                 } else {
                     PasswordVisualTransformation()
                 },
+                // trailing icon is used in order to display the password
                 trailingIcon = {
                     IconButton(
                         onClick = {
@@ -122,6 +128,8 @@ fun LoginScreen(
 
             Spacer(Modifier.height(10.dp))
 
+            // button used to login
+            // if no firebase account display a login error flag
             Button(
                 onClick = {
                     auth.signInWithEmailAndPassword(
@@ -152,6 +160,7 @@ fun LoginScreen(
             Spacer(Modifier.height(12.dp))
 
 
+            // add clickable text used in order to navigation to create account page
             ClickableText(
                 text = AnnotatedString("Create an Account"),
                 style = TextStyle(
@@ -165,6 +174,7 @@ fun LoginScreen(
 
             Spacer(Modifier.height(20.dp))
 
+            // add clickable text used in order to navigation to forgot password page
             ClickableText(
                 text = AnnotatedString("Forgot Password"),
                 style = TextStyle(

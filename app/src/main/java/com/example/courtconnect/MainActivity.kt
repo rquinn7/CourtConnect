@@ -33,12 +33,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             CourtConnectTheme {
 
+                // create nav controller used to move around from login, create account, forgot password and home
                 val navController = rememberNavController()
 
                 NavHost(
                     navController = navController,
                     startDestination = "login"
                 ) {
+                    // navigation from login
+                    // login -> create account
+                    // login -> forgot password
+                    // login -> home screen
                     composable("login") {
                         LoginScreen(
                             onCreateAccountClick = {
@@ -57,14 +62,18 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+                    // create account navigation
+
                     composable("createAccount") {
                         CreateAccountScreen(
                             onLoginClick = {
+                                // used to go back to previous screen after clicking button on page
                                 navController.popBackStack()
                             }
                         )
                     }
 
+                    // forgot password navigation
                     composable("forgotPassword") {
                         ForgotPasswordScreen(
                             onBackToLogin = {
@@ -73,6 +82,8 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+                    // home screen navigation
+                    // no button to return to login screen so not needed here
                     composable("home") {
                         HomeScreen()
                     }

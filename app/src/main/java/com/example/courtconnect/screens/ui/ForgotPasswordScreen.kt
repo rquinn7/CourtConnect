@@ -50,10 +50,12 @@ import com.google.firebase.auth.FirebaseAuth
 fun ForgotPasswordScreen(
     onBackToLogin: () -> Unit
 ) {
+    // create variables for email and message
+    // message is used to say that the forgot password email was sent
     var email by remember() { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
 
-    //firebase stuff
+    // used for firebase authorization to make sure account is in firebase
     val auth = FirebaseAuth.getInstance()
 
     Column(
@@ -64,6 +66,7 @@ fun ForgotPasswordScreen(
     )
     {
 
+        // display logo
         Image(
             painter = painterResource(id = R.drawable.logo_bg_remove),
             contentDescription = "CourtConnect Logo",
@@ -95,7 +98,7 @@ fun ForgotPasswordScreen(
 
 
 
-
+        // email text field
         OutlinedTextField(
             modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
             value = email,
@@ -116,6 +119,7 @@ fun ForgotPasswordScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        // button used to send password reset email
         Button(
             onClick = {
                 auth.sendPasswordResetEmail(email)
@@ -147,6 +151,7 @@ fun ForgotPasswordScreen(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        // clickable text used to return to login screen
         ClickableText(
             text = AnnotatedString("Remember your password? Return to login"),
             style = TextStyle(
@@ -157,10 +162,16 @@ fun ForgotPasswordScreen(
             }
         )
 
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // once password reset email sent, notify the user
         if (message.isNotBlank()) {
             Text(
-                text = message
+                text = message,
+                color = Color(0xFF335603)
             )
+
+
         }
     }
 }
