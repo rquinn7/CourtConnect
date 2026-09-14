@@ -64,6 +64,7 @@ fun CreateAccountScreen(
     var passwordVisible by remember { mutableStateOf(false) }
     var passwordConfirmed by remember { mutableStateOf("") }
     var passwordError by remember {mutableStateOf(false)}
+    var passwordRequirementError by remember { mutableStateOf(false) }
 
     // variables used for firebase
     // used to authorize account and access to firebase
@@ -154,6 +155,16 @@ fun CreateAccountScreen(
             )
         )
 
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp)
+        ) {
+        Text(
+            text = "Password must be at least 8 characters and include a number and special character.",
+            fontSize = 16.sp,
+            modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically)
+        )
+            }
+
         // password text field
         OutlinedTextField(
             value = password,
@@ -217,6 +228,11 @@ fun CreateAccountScreen(
 
         )
 
+        val passwordIsSecure =
+            password.length >= 8 &&
+                    password.any { it.isDigit() } &&
+                    password.any { !it.isLetterOrDigit() }
+
         if (passwordError) {
             Text(
                 text = "Passwords do not match",
@@ -225,15 +241,24 @@ fun CreateAccountScreen(
             )
         }
 
-        Spacer(Modifier.height(10.dp))
 
-        // button which will create the account in firebase
+
+        Spacer(Modifier.height(10.dp))
         Button(
             onClick = {
-                if (password == passwordConfirmed) {
+
+                if (!passwordIsSecure) {
+                    passwordRequirementError = true
                     passwordError = false
-                    // create account later
-                    // firebase below
+                }
+                else if (password != passwordConfirmed) {
+                    passwordError = true
+                    passwordRequirementError = false
+                }
+                else {
+                    passwordError = false
+                    passwordRequirementError = false
+
                     auth.createUserWithEmailAndPassword(
                         email,
                         password
@@ -245,7 +270,6 @@ fun CreateAccountScreen(
 
                             if (user != null) {
 
-                                // creates the user account in firestore
                                 val userData = hashMapOf(
                                     "firstName" to firstName,
                                     "lastName" to lastName,
@@ -266,27 +290,47 @@ fun CreateAccountScreen(
                                         )
                                     }
                             }
+
+                        } else {
+                            Log.e(
+                                "FirebaseAuth",
+                                "Account creation failed",
+                                task.exception
+                            )
                         }
                     }
-                } else {
-                    // show password mismatch error
-                    passwordError = true
                 }
             },
+
+            // KEEP YOUR EXISTING BUTTON SETTINGS HERE
             enabled = Patterns.EMAIL_ADDRESS.matcher(email).matches()
                     && password.isNotBlank()
                     && firstName.isNotBlank()
                     && lastName.isNotBlank()
                     && passwordConfirmed.isNotBlank(),
+
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF5B9808)
             ),
+
             modifier = Modifier
                 .width(220.dp)
                 .height(52.dp)
 
         ) {
             Text("Create Account")
+        }
+
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp)
+        ) {
+            if (passwordRequirementError) {
+                Text(
+                    text = "Password must be at least 8 characters and include a number and special character.",
+                    color = Color.Red,
+                    fontSize = 14.sp
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))
