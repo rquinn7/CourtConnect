@@ -1,5 +1,6 @@
 package com.example.courtconnect.screens.ui
 
+import android.R.attr.shadowColor
 import android.util.Log
 import android.util.Patterns
 import androidx.compose.foundation.Image
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -39,9 +41,155 @@ import androidx.compose.ui.unit.dp
 import com.example.courtconnect.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.background
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
 
 @Preview(showSystemUi = true)
 @Composable
 fun HomeScreen() {
-    Text("Home")
+
+    var firstName by remember { mutableStateOf("") }
+
+    val auth = FirebaseAuth.getInstance()
+    val db = FirebaseFirestore.getInstance()
+
+    LaunchedEffect(Unit) {
+
+        val user = auth.currentUser
+
+        if (user != null) {
+
+            db.collection("users")
+                .document(user.uid)
+                .get()
+                .addOnSuccessListener { document ->
+
+                    firstName = document.getString("firstName") ?: ""
+                }
+        }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(Color(0xFFCCCCCC)),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    )
+    {
+
+        // displays logo
+        Image(
+            painter = painterResource(id = R.drawable.logo_bg_remove),
+            contentDescription = "CourtConnect Logo",
+            modifier = Modifier
+                .padding(bottom = 5.dp)
+                .size(150.dp)
+        )
+
+        Column(
+            modifier = Modifier.padding(horizontal = 24.dp)
+        ) {
+            Text(
+                text = "Welcome back to the Court, $firstName!",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "Ready to get back out there and meet some new opponents or maybe some new friends",
+                fontSize = 16.sp,
+                modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
+                )
+        }
+        Spacer(modifier = Modifier.height(4.dp))
+
+
+        SportCard(
+            title = "🎾 Tennis",
+            description = "Find tennis courts near you",
+            onClick = {
+                // Navigate to Tennis page
+            }
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+
+        SportCard(
+            title = "🏀 Basketball",
+            description = "Find basketball courts near you",
+            onClick = {
+                // Navigate to Basketball page
+            }
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+
+        SportCard(
+            title = "🥒🏸 Pickleball",
+            description = "Find Pickleball courts near you",
+            onClick = {
+                // Navigate to Pickleball page
+            }
+        )
+
+    }
+}
+@Composable
+fun SportCard(
+    title: String,
+    description: String,
+    onClick: () -> Unit
+) {
+    Card(
+        onClick = onClick,
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(100.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF4A7000)
+        )
+
+    )
+    {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = title,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+
+            )
+
+            Spacer(
+                modifier = Modifier.height(5.dp)
+            )
+
+            Text(
+                text = "$description →",
+                fontSize = 14.sp,
+                color = Color.White
+
+            )
+        }
+    }
 }
