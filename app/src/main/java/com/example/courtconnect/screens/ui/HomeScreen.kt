@@ -46,6 +46,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.background
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import androidx.compose.runtime.getValue
@@ -54,7 +58,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
 
-@Preview(showSystemUi = true)
+
 @Composable
 fun HomeScreen() {
 
@@ -79,74 +83,84 @@ fun HomeScreen() {
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-            .background(Color(0xFFCCCCCC)),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    )
-    {
-
-        // displays logo
-        Image(
-            painter = painterResource(id = R.drawable.logo_bg_remove),
-            contentDescription = "CourtConnect Logo",
-            modifier = Modifier
-                .padding(bottom = 5.dp)
-                .size(150.dp)
-        )
+    Scaffold(
+        bottomBar = {
+            CourtConnectBottomBar()
+        }
+    ) { innerPadding ->
 
         Column(
-            modifier = Modifier.padding(horizontal = 24.dp)
-        ) {
-            Text(
-                text = "Welcome back to the Court, $firstName!",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFFFFFFF))
+                .padding(innerPadding),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        )
+
+        {
+
+            // displays logo
+            Image(
+                painter = painterResource(id = R.drawable.logo_bg_remove),
+                contentDescription = "CourtConnect Logo",
+                modifier = Modifier
+                    .padding(bottom = 5.dp)
+                    .size(150.dp)
             )
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Ready to get back out there and meet some new opponents or maybe some new friends",
-                fontSize = 16.sp,
-                modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
+            Column(
+                modifier = Modifier.padding(horizontal = 24.dp)
+            ) {
+                Text(
+                    text = "Welcome back to the Court, $firstName!",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
                 )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Ready to get back out there and meet some new opponents or maybe some new friends",
+                    fontSize = 16.sp,
+                    modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
+                )
+            }
+            Spacer(modifier = Modifier.height(4.dp))
+
+
+            SportCard(
+                title = "🎾 Tennis",
+                description = "Find tennis courts near you",
+                onClick = {
+                    // Navigate to Tennis page
+                }
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+
+            SportCard(
+                title = "🏀 Basketball",
+                description = "Find basketball courts near you",
+                onClick = {
+                    // Navigate to Basketball page
+                }
+            )
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+
+            SportCard(
+                title = "🥒🏸 Pickleball",
+                description = "Find Pickleball courts near you",
+                onClick = {
+                    // Navigate to Pickleball page
+                }
+            )
+
         }
-        Spacer(modifier = Modifier.height(4.dp))
-
-
-        SportCard(
-            title = "🎾 Tennis",
-            description = "Find tennis courts near you",
-            onClick = {
-                // Navigate to Tennis page
-            }
-        )
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-
-        SportCard(
-            title = "🏀 Basketball",
-            description = "Find basketball courts near you",
-            onClick = {
-                // Navigate to Basketball page
-            }
-        )
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-
-        SportCard(
-            title = "🥒🏸 Pickleball",
-            description = "Find Pickleball courts near you",
-            onClick = {
-                // Navigate to Pickleball page
-            }
-        )
-
     }
 }
 @Composable
@@ -191,5 +205,69 @@ fun SportCard(
 
             )
         }
+    }
+}
+
+@Composable
+fun CourtConnectBottomBar() {
+
+    NavigationBar(
+        containerColor = Color.White
+    ) {
+
+        NavigationBarItem(
+            selected = true,
+            onClick = {
+                // Home navigation later
+            },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Home,
+                    contentDescription = "Home"
+                )
+            },
+            label = {
+                Text("Home")
+            }
+        )
+
+        NavigationBarItem(
+            selected = false,
+            onClick = {
+                // Tennis navigation later
+            },
+            icon = {
+                Text("🎾")
+            },
+            label = {
+                Text("Tennis")
+            }
+        )
+
+        NavigationBarItem(
+            selected = false,
+            onClick = {
+                // Basketball navigation later
+            },
+            icon = {
+                Text("🏀")
+            },
+            label = {
+                Text("Basketball")
+            }
+        )
+
+        NavigationBarItem(
+            selected = false,
+            onClick = {
+                // Pickleball navigation later
+            },
+            icon = {
+                Text("🏓")
+            },
+            label = {
+                Text("Pickleball")
+            }
+        )
     }
 }
