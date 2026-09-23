@@ -1,9 +1,7 @@
 package com.example.courtconnect.screens.ui
 
-import android.R.attr.shadowColor
-import android.util.Log
-import android.util.Patterns
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -12,17 +10,21 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,36 +33,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.courtconnect.R
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.background
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
+import com.example.courtconnect.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.LaunchedEffect
 
 
+// REAL APP VERSION
+// Gets the user's first name from Firebase
 @Composable
-fun HomeScreen() {
+fun HomeScreenWithFirebase() {
 
     var firstName by remember { mutableStateOf("") }
 
@@ -83,6 +68,19 @@ fun HomeScreen() {
         }
     }
 
+    HomeScreen(
+        firstName = firstName
+    )
+}
+
+
+// HOME SCREEN UI
+// Does not directly use Firebase, so Preview can display it
+@Composable
+fun HomeScreen(
+    firstName: String
+) {
+
     Scaffold(
         bottomBar = {
             CourtConnectBottomBar()
@@ -93,53 +91,70 @@ fun HomeScreen() {
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFFFFFFF))
-                .padding(innerPadding),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        )
+                .padding(innerPadding)
+        ) {
 
-        {
 
-            // displays logo
-            Image(
-                painter = painterResource(id = R.drawable.logo_bg_remove),
-                contentDescription = "CourtConnect Logo",
-                modifier = Modifier
-                    .padding(bottom = 5.dp)
-                    .size(150.dp)
-            )
+
+                Image(
+                    painter = painterResource(id = R.drawable.rezised_logo),
+                    contentDescription = "CourtConnect Logo",
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .height(85.dp)
+                )
+
+                HorizontalDivider(
+                    thickness = 2.dp,
+                    color = Color(0xFF4A7000)
+                )
+
+                Spacer(
+                    modifier = Modifier.height(4.dp)
+                )
+
 
             Column(
                 modifier = Modifier.padding(horizontal = 24.dp)
             ) {
+
                 Text(
                     text = "Welcome back to the Court, $firstName!",
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
+                    modifier = Modifier.wrapContentHeight(
+                        align = Alignment.CenterVertically
+                    )
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(
+                    modifier = Modifier.height(8.dp)
+                )
 
                 Text(
                     text = "Ready to get back out there and meet some new opponents or maybe some new friends",
                     fontSize = 16.sp,
-                    modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
+                    modifier = Modifier.wrapContentHeight(
+                        align = Alignment.CenterVertically
+                    )
                 )
             }
-            Spacer(modifier = Modifier.height(4.dp))
 
+            Spacer(
+                modifier = Modifier.height(4.dp)
+            )
 
             SportCard(
                 title = "🎾 Tennis",
                 description = "Find tennis courts near you",
-                onClick = {
+            onClick = {
                     // Navigate to Tennis page
                 }
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
-
+            Spacer(
+                modifier = Modifier.height(6.dp)
+            )
 
             SportCard(
                 title = "🏀 Basketball",
@@ -149,49 +164,95 @@ fun HomeScreen() {
                 }
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
-
+            Spacer(
+                modifier = Modifier.height(6.dp)
+            )
 
             SportCard(
                 title = "🥒🏸 Pickleball",
-                description = "Find Pickleball courts near you",
+                description = "Find pickleball courts near you",
                 onClick = {
                     // Navigate to Pickleball page
                 }
             )
 
+            Spacer(
+                modifier = Modifier.height(6.dp)
+            )
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+
+                Text(
+                    text = "Community",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "See what players are up to",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+
+                Spacer(
+                    modifier = Modifier.height(10.dp)
+                )
+
+                CommunityPost(
+                    name = "Alex",
+                    sport = "🏀 Basketball",
+                    message = "Anyone looking to play basketball tonight?"
+                )
+
+
+                CommunityPost(
+                    name = "Joe",
+                    sport = "🎾 Tennis",
+                    message = "Anyone looking to play tennis tonight?"
+                )
+            }
         }
     }
 }
+
+
 @Composable
 fun SportCard(
     title: String,
     description: String,
     onClick: () -> Unit
 ) {
+
     Card(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
+            .padding(horizontal = 16.dp)
             .height(100.dp),
+
+
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFF4A7000)
         )
+    ) {
 
-    )
-    {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
+
             verticalArrangement = Arrangement.Center
         ) {
+
             Text(
                 text = title,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White
-
             )
 
             Spacer(
@@ -202,11 +263,11 @@ fun SportCard(
                 text = "$description →",
                 fontSize = 14.sp,
                 color = Color.White
-
             )
         }
     }
 }
+
 
 @Composable
 fun CourtConnectBottomBar() {
@@ -228,7 +289,14 @@ fun CourtConnectBottomBar() {
             },
             label = {
                 Text("Home")
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color.White,
+                selectedTextColor = Color(0xFF4A7000),
+                indicatorColor = Color(0xFF4A7000),
+                unselectedIconColor = Color.Gray,
+                unselectedTextColor = Color.Gray
+            )
         )
 
         NavigationBarItem(
@@ -269,5 +337,85 @@ fun CourtConnectBottomBar() {
                 Text("Pickleball")
             }
         )
+        NavigationBarItem(
+            selected = false,
+            onClick = {
+                // Social navigation later
+            },
+            icon = {
+                Text("🛜")
+            },
+            label = {
+                Text("Connect")
+            }
+        )
     }
+}
+
+@Composable
+fun CommunityPost(
+    name: String,
+    sport: String,
+    message: String
+) {
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFF5F5F5)
+        )
+    ) {
+
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+
+            Text(
+                text = name,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Text(
+                text = sport,
+                fontSize = 13.sp,
+                color = Color(0xFF4A7000)
+            )
+
+            Spacer(
+                modifier = Modifier.height(8.dp)
+            )
+
+            Text(
+                text = message,
+                fontSize = 15.sp
+            )
+
+            Spacer(
+                modifier = Modifier.height(10.dp)
+            )
+
+            Text(
+                text = "♡ Like     💬 Comment",
+                fontSize = 13.sp,
+                color = Color.Gray
+            )
+
+        }
+    }
+}
+
+
+// PREVIEW VERSION
+// Uses fake data instead of Firebase
+@Preview(
+    showBackground = true,
+    showSystemUi = true
+)
+@Composable
+fun HomeScreenPreview() {
+
+    HomeScreen(
+        firstName = "Ryan"
+    )
 }
