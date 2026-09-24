@@ -82,6 +82,9 @@ fun HomeScreen(
 ) {
 
     Scaffold(
+        topBar = {
+            CourtConnectTopBar()
+        },
         bottomBar = {
             CourtConnectBottomBar()
         }
@@ -96,22 +99,7 @@ fun HomeScreen(
 
 
 
-                Image(
-                    painter = painterResource(id = R.drawable.rezised_logo),
-                    contentDescription = "CourtConnect Logo",
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .height(85.dp)
-                )
 
-                HorizontalDivider(
-                    thickness = 2.dp,
-                    color = Color(0xFF4A7000)
-                )
-
-                Spacer(
-                    modifier = Modifier.height(4.dp)
-                )
 
 
             Column(
@@ -272,6 +260,12 @@ fun SportCard(
 @Composable
 fun CourtConnectBottomBar() {
 
+    Column{
+    HorizontalDivider(
+        thickness = 2.dp,
+        color = Color(0xFF4A7000)
+    )
+
     NavigationBar(
         containerColor = Color.White
     ) {
@@ -351,6 +345,7 @@ fun CourtConnectBottomBar() {
         )
     }
 }
+}
 
 @Composable
 fun CommunityPost(
@@ -418,4 +413,28 @@ fun HomeScreenPreview() {
     HomeScreen(
         firstName = "Ryan"
     )
+}
+
+@Composable
+fun CourtConnectTopBar() {
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White)
+    ) {
+
+        Image(
+            painter = painterResource(id = R.drawable.rezised_logo),
+            contentDescription = "CourtConnect Logo",
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .height(85.dp)
+        )
+
+        HorizontalDivider(
+            thickness = 2.dp,
+            color = Color(0xFF4A7000)
+        )
+    }
 }

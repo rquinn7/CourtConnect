@@ -25,6 +25,8 @@ import com.example.courtconnect.screens.ui.HomeScreen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.graphics.Color
+import com.example.courtconnect.screens.ui.BasketballScreen
+import com.example.courtconnect.screens.ui.HomeScreenWithFirebase
 
 class MainActivity : ComponentActivity() {
 
@@ -84,8 +86,8 @@ class MainActivity : ComponentActivity() {
 
                     // home screen navigation
                     // no button to return to login screen so not needed here
-                    composable("home") {
-                        HomeScreen()
+                    composable(route = "home") {
+                        BasketballScreen()
                     }
                 }
             }
