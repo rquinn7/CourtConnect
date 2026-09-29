@@ -27,11 +27,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.ui.graphics.Color
 import com.example.courtconnect.screens.ui.BasketballScreen
 import com.example.courtconnect.screens.ui.HomeScreenWithFirebase
+import com.google.android.libraries.places.api.Places
 
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val apiKey = BuildConfig.PLACES_API_KEY
+
+        if (!Places.isInitialized()) {
+            Places.initializeWithNewPlacesApiEnabled(
+                applicationContext,
+                apiKey
+            )
+        }
+
+        val placesClient = Places.createClient(this)
         setContent {
             CourtConnectTheme {
 
@@ -92,5 +103,6 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
     }
 }

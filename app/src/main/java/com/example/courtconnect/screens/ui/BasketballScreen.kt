@@ -41,6 +41,17 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 
+import android.annotation.SuppressLint
+import android.util.Log
+
+import com.google.android.gms.location.LocationServices
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.CircularBounds
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.SearchByTextRequest
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberUpdatedMarkerState
+
 @Preview(
     showBackground = true,
     showSystemUi = true
@@ -48,11 +59,11 @@ import com.google.maps.android.compose.rememberUpdatedMarkerState
 @Composable
 fun BasketballScreen() {
 
-    val basketballCourts = listOf(
-        Pair("Basketball Court 1", LatLng(39.9550, -75.1650)),
-        Pair("Basketball Court 2", LatLng(39.9480, -75.1700)),
-        Pair("Basketball Court 3", LatLng(39.9600, -75.1550))
-    )
+    var basketballCourts by remember {
+        mutableStateOf<List<Place>>(emptyList())
+    }
+
+    val cameraPositionState = rememberCameraPositionState()
 
     val context = LocalContext.current
 
@@ -72,22 +83,72 @@ fun BasketballScreen() {
             hasLocationPermission = granted
         }
 
-    LaunchedEffect(Unit) {
-        if (!hasLocationPermission) {
-            locationPermissionLauncher.launch(
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
+    val fusedLocationClient = remember {
+        LocationServices.getFusedLocationProviderClient(context)
+    }
+
+    val placesClient = remember {
+        Places.createClient(context)
+    }
+
+    @SuppressLint("MissingPermission")
+    LaunchedEffect(hasLocationPermission) {
+
+        if (hasLocationPermission) {
+
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { location ->
+
+                    if (location != null) {
+
+                        val userLocation = LatLng(
+                            location.latitude,
+                            location.longitude
+                        )
+
+                        cameraPositionState.position =
+                            CameraPosition.fromLatLngZoom(
+                                userLocation,
+                                13f
+                            )
+
+                        val placeFields = listOf(
+                            Place.Field.DISPLAY_NAME,
+                            Place.Field.LOCATION
+                        )
+
+                        val searchArea = CircularBounds.newInstance(
+                            userLocation,
+                            16000.0
+                        )
+
+                        val request = SearchByTextRequest.builder(
+                            "basketball court",
+                            placeFields
+                        )
+                            .setLocationBias(searchArea)
+                            .setMaxResultCount(20)
+                            .build()
+
+                        placesClient.searchByText(request)
+                            .addOnSuccessListener { response ->
+
+                                basketballCourts = response.places
+
+                            }
+                            .addOnFailureListener { exception ->
+
+                                Log.e(
+                                    "CourtConnect",
+                                    "Court search failed",
+                                    exception
+                                )
+                            }
+                    }
+                }
         }
     }
 
-    val startingLocation = LatLng(39.9526, -75.1652)
-
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(
-            startingLocation,
-            11f
-        )
-    }
 
     Scaffold(
         topBar = {
@@ -139,12 +200,15 @@ fun BasketballScreen() {
 
                 basketballCourts.forEach { court ->
 
-                    Marker(
-                        state = rememberUpdatedMarkerState(
-                            position = court.second
-                        ),
-                        title = court.first
-                    )
+                    court.location?.let { courtLocation ->
+
+                        Marker(
+                            state = rememberUpdatedMarkerState(
+                                position = courtLocation
+                            ),
+                            title = court.displayName ?: "Basketball Court"
+                        )
+                    }
                 }
             }
         }
