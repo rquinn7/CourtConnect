@@ -63,4 +63,5 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.9.5")
     implementation("com.google.firebase:firebase-firestore")
     implementation("com.google.maps.android:maps-compose:6.12.2")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 }
