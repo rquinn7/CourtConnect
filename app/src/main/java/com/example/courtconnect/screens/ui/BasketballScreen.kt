@@ -51,6 +51,8 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.SearchByTextRequest
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberUpdatedMarkerState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 
 @Preview(
     showBackground = true,
@@ -113,8 +115,11 @@ fun BasketballScreen() {
                             )
 
                         val placeFields = listOf(
+                            Place.Field.ID,
                             Place.Field.DISPLAY_NAME,
-                            Place.Field.LOCATION
+                            Place.Field.LOCATION,
+                            Place.Field.FORMATTED_ADDRESS,
+                            Place.Field.RATING
                         )
 
                         val searchArea = CircularBounds.newInstance(
@@ -191,7 +196,7 @@ fun BasketballScreen() {
             GoogleMap(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(400.dp),
+                    .height(350.dp),
                 cameraPositionState = cameraPositionState,
                 properties = MapProperties(
                     isMyLocationEnabled = hasLocationPermission
@@ -206,12 +211,73 @@ fun BasketballScreen() {
                             state = rememberUpdatedMarkerState(
                                 position = courtLocation
                             ),
-                            title = court.displayName ?: "Basketball Court"
+                            title = court.displayName ?: "Basketball Court",
+                            snippet = buildString {
+                                court.formattedAddress?.let {
+                                    append(it)
+                                }
+
+                                court.rating?.let {
+                                    if (isNotEmpty()) append("\n")
+                                    append("⭐ $it")
+                                }
+                            }
                         )
                     }
                 }
             }
+            Text(
+                text = "Nearby Basketball Courts",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(
+                    start = 16.dp,
+                    top = 12.dp,
+                    bottom = 8.dp
+                ),
+                textAlign = TextAlign.Center
+            )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                items(basketballCourts) { court ->
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                horizontal = 16.dp,
+                                vertical = 10.dp
+                            )
+                    ) {
+
+                        Text(
+                            text = court.displayName ?: "Basketball Court",
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+
+                        court.rating?.let { rating ->
+                            Text(
+                                text = "⭐ $rating",
+                                fontSize = 14.sp
+                            )
+                        }
+
+                        court.formattedAddress?.let { address ->
+                            Text(
+                                text = address,
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        }
+                    }
+                }
+            }
         }
+
     }
 }
 

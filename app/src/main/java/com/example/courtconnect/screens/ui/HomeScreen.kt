@@ -271,7 +271,7 @@ fun CourtConnectBottomBar() {
     ) {
 
         NavigationBarItem(
-            selected = true,
+            selected = false,
             onClick = {
                 // Home navigation later
             },
@@ -286,10 +286,8 @@ fun CourtConnectBottomBar() {
             },
             colors = NavigationBarItemDefaults.colors(
                 selectedIconColor = Color.White,
-                selectedTextColor = Color(0xFF4A7000),
-                indicatorColor = Color(0xFF4A7000),
-                unselectedIconColor = Color.Gray,
-                unselectedTextColor = Color.Gray
+                selectedTextColor = Color(0xFF6A9F01),
+                indicatorColor = Color(0xFF6A9F01)
             )
         )
 
@@ -303,11 +301,16 @@ fun CourtConnectBottomBar() {
             },
             label = {
                 Text("Tennis")
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color.White,
+                selectedTextColor = Color(0xFF6A9F01),
+                indicatorColor = Color(0xFF6A9F01)
+            )
         )
 
         NavigationBarItem(
-            selected = false,
+            selected = true,
             onClick = {
                 // Basketball navigation later
             },
@@ -316,7 +319,12 @@ fun CourtConnectBottomBar() {
             },
             label = {
                 Text("Basketball")
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color.White,
+                selectedTextColor = Color(0xFF6A9F01),
+                indicatorColor = Color(0xFF6A9F01)
+            )
         )
 
         NavigationBarItem(
@@ -329,7 +337,12 @@ fun CourtConnectBottomBar() {
             },
             label = {
                 Text("Pickleball")
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color.White,
+                selectedTextColor = Color(0xFF4A7000),
+                indicatorColor = Color(0xFF4A7000)
+            )
         )
         NavigationBarItem(
             selected = false,
@@ -341,7 +354,12 @@ fun CourtConnectBottomBar() {
             },
             label = {
                 Text("Connect")
-            }
+            },
+            colors = NavigationBarItemDefaults.colors(
+                selectedIconColor = Color.White,
+                selectedTextColor = Color(0xFF4A7000),
+                indicatorColor = Color(0xFF4A7000)
+            )
         )
     }
 }
