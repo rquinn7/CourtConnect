@@ -41,9 +41,6 @@ import com.example.courtconnect.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
-
-// REAL APP VERSION
-// Gets the user's first name from Firebase
 @Composable
 fun HomeScreenWithFirebase() {
 
@@ -81,27 +78,24 @@ fun HomeScreen(
     firstName: String
 ) {
 
+    // https://developer.android.com/develop/ui/compose/quick-guides/content/create-scaffold
+    // use a scaffold in order to hold the court connect logo at top and the navigation between
+    // sports pages at the bottom
     Scaffold(
         topBar = {
-            CourtConnectTopBar()
+            LogoTopApp()
         },
         bottomBar = {
-            CourtConnectBottomBar()
+            SportsNavigationBottom()
         }
-    ) { innerPadding ->
-
+    ) { // inner padding which refers to the inner dimensions of the scaffold
+        innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFFFFFFF))
                 .padding(innerPadding)
         ) {
-
-
-
-
-
-
             Column(
                 modifier = Modifier.padding(horizontal = 24.dp)
             ) {
@@ -132,7 +126,8 @@ fun HomeScreen(
                 modifier = Modifier.height(4.dp)
             )
 
-            SportCard(
+            //
+            SportsCardCreate(
                 title = "🎾 Tennis",
                 description = "Find tennis courts near you",
             onClick = {
@@ -144,7 +139,7 @@ fun HomeScreen(
                 modifier = Modifier.height(6.dp)
             )
 
-            SportCard(
+            SportsCardCreate(
                 title = "🏀 Basketball",
                 description = "Find basketball courts near you",
                 onClick = {
@@ -156,7 +151,7 @@ fun HomeScreen(
                 modifier = Modifier.height(6.dp)
             )
 
-            SportCard(
+            SportsCardCreate(
                 title = "🥒🏸 Pickleball",
                 description = "Find pickleball courts near you",
                 onClick = {
@@ -208,13 +203,16 @@ fun HomeScreen(
 }
 
 
+// https://developer.android.com/develop/ui/compose/components/card
+// create the cards in the center of the screen which can be used to navigate to the sports pages
 @Composable
-fun SportCard(
+fun SportsCardCreate(
     title: String,
     description: String,
     onClick: () -> Unit
 ) {
-
+    // create a generic card, which can then be used to hold the information regarding each
+    // sport
     Card(
         onClick = onClick,
         modifier = Modifier
@@ -256,9 +254,11 @@ fun SportCard(
     }
 }
 
-
+// https://developer.android.com/develop/ui/compose/components/navigation-bar
+// navigation bar which is used to move between the different sports pages
+// this remains at bottom of screen through all home screen pages once logged in
 @Composable
-fun CourtConnectBottomBar() {
+fun SportsNavigationBottom() {
 
     Column{
     HorizontalDivider(
@@ -365,6 +365,7 @@ fun CourtConnectBottomBar() {
 }
 }
 
+// used as a temporary holder for what will later be the social media aspect of this project
 @Composable
 fun CommunityPost(
     name: String,
@@ -417,24 +418,10 @@ fun CommunityPost(
         }
     }
 }
-
-
-// PREVIEW VERSION
-// Uses fake data instead of Firebase
-@Preview(
-    showBackground = true,
-    showSystemUi = true
-)
+// used to hold the logo at the top of all the screens, this aspect remains at top of page for entire
+// time while logged in
 @Composable
-fun HomeScreenPreview() {
-
-    HomeScreen(
-        firstName = "Ryan"
-    )
-}
-
-@Composable
-fun CourtConnectTopBar() {
+fun LogoTopApp() {
 
     Column(
         modifier = Modifier
@@ -455,4 +442,18 @@ fun CourtConnectTopBar() {
             color = Color(0xFF4A7000)
         )
     }
+}
+
+// PREVIEW VERSION
+// Uses fake data instead of Firebase
+@Preview(
+    showBackground = true,
+    showSystemUi = true
+)
+@Composable
+fun HomeScreenPreview() {
+
+    HomeScreen(
+        firstName = "Ryan"
+    )
 }

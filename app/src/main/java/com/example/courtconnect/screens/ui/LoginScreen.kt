@@ -52,7 +52,7 @@ import com.example.courtconnect.screens.ui.HomeScreen
 fun LoginScreen(
     onCreateAccountClick: () -> Unit,
     onForgotPasswordClick: () -> Unit,
-    onLoginSuccess: () -> Unit
+    successfulLogin: () -> Unit
 )  {
     // create variables for email, password and password visible
     // password visible is used for showing the password when clicking eye icon on field
@@ -130,6 +130,8 @@ fun LoginScreen(
 
             // button used to login
             // if no firebase account display a login error flag
+            // https://firebase.google.com/docs/auth/android/firebaseui
+            // code for logging in came from here
             Button(
                 onClick = {
                     auth.signInWithEmailAndPassword(
@@ -138,7 +140,7 @@ fun LoginScreen(
                     ).addOnCompleteListener { task ->
 
                         if (task.isSuccessful) {
-                            onLoginSuccess()
+                            successfulLogin()
                         } else {
                             Log.e(
                                 "FirebaseAuth",
@@ -166,8 +168,7 @@ fun LoginScreen(
                 style = TextStyle(
                     color = Color(0xFFFF5722)
                 ),
-                onClick = { offset ->
-                    Log.d("ClickableText", "$offset -th character is clicked.")
+                onClick = {
                     onCreateAccountClick()
                 }
             )

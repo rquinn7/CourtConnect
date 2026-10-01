@@ -157,10 +157,10 @@ fun BasketballScreen() {
 
     Scaffold(
         topBar = {
-            CourtConnectTopBar()
+            LogoTopApp()
         },
         bottomBar = {
-            CourtConnectBottomBar()
+            SportsNavigationBottom()
         }
     ) { innerPadding ->
 

@@ -33,12 +33,15 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val apiKey = BuildConfig.PLACES_API_KEY
+        // used to gain access to the places API from Google which is used to find the different
+        // court locations
+        val apiKeyPlaces = BuildConfig.PLACES_API_KEY
 
+        // use the API key and the context within the app in order to ensure the places API is working
         if (!Places.isInitialized()) {
             Places.initializeWithNewPlacesApiEnabled(
                 applicationContext,
-                apiKey
+                apiKeyPlaces
             )
         }
 
@@ -65,7 +68,7 @@ class MainActivity : ComponentActivity() {
                             onForgotPasswordClick = {
                                 navController.navigate("forgotPassword")
                             },
-                            onLoginSuccess = {
+                            successfulLogin = {
                                 navController.navigate("home") {
                                     popUpTo("login") {
                                         inclusive = true
@@ -76,7 +79,6 @@ class MainActivity : ComponentActivity() {
                     }
 
                     // create account navigation
-
                     composable("createAccount") {
                         CreateAccountScreen(
                             onLoginClick = {

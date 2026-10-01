@@ -122,22 +122,15 @@ fun ForgotPasswordScreen(
         // button used to send password reset email
         Button(
             onClick = {
+                // https://firebase.google.com/docs/auth/android/manage-users?utm_source=chatgpt.com#send_a_password_reset_email
+                // used code from above for process below
                 auth.sendPasswordResetEmail(email)
                     .addOnCompleteListener { task ->
 
                         if (task.isSuccessful) {
                             message = "Password reset email sent."
-                            Log.d(
-                                "FirebaseAuth",
-                                "Password reset email sent."
-                            )
                         } else {
                             message = "Unable to send reset email."
-                            Log.e(
-                                "FirebaseAuth",
-                                "Password reset failed",
-                                task.exception
-                            )
                         }
                     }
             },

@@ -61,15 +61,19 @@ fun CreateAccountScreen(
     var lastName by remember() { mutableStateOf("") }
     var email by remember() {mutableStateOf("")}
     var password by remember() {mutableStateOf("")}
+    // displays the password which is entered in the textbox
     var passwordVisible by remember { mutableStateOf(false) }
+    // used to hold the confirmed password
     var passwordConfirmed by remember { mutableStateOf("") }
+    // if the passwords do not match display an error
     var passwordError by remember {mutableStateOf(false)}
+    // if the password does not satisfy requirements send an error
     var passwordRequirementError by remember { mutableStateOf(false) }
 
     // variables used for firebase
     // used to authorize account and access to firebase
     val auth = FirebaseAuth.getInstance()
-    // used to connect to firestone which is database that holds all account information
+    // used to connect to firestore which is database that holds all account information
     val db = FirebaseFirestore.getInstance()
 
     Column(
@@ -114,6 +118,8 @@ fun CreateAccountScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         // first name text field
+        // https://developer.android.com/develop/ui/compose/text/user-input?textfield=state-based
+        // https://developer.android.com/reference/kotlin/androidx/compose/material/OutlinedTextField.composable
         OutlinedTextField(
             modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically),
             value = firstName,
@@ -228,11 +234,15 @@ fun CreateAccountScreen(
 
         )
 
+        // boolean value used to check if the password has all the requirements needed for account
+        // creation including atleast 8 characters, contains a digit and a special character
+        // https://www.baeldung.com/kotlin/password-validation
         val passwordIsSecure =
             password.length >= 8 &&
                     password.any { it.isDigit() } &&
                     password.any { !it.isLetterOrDigit() }
 
+        // if there is a password error send out a message
         if (passwordError) {
             Text(
                 text = "Passwords do not match",
@@ -244,17 +254,27 @@ fun CreateAccountScreen(
 
 
         Spacer(Modifier.height(10.dp))
+        // button which is used to attempt to create the account
         Button(
             onClick = {
 
+                // if the password does not satisfy the password requirements
+                // display the error associated
                 if (!passwordIsSecure) {
                     passwordRequirementError = true
                     passwordError = false
                 }
+                // if the password does not match the confirmed password
+                // display the error associated
                 else if (password != passwordConfirmed) {
                     passwordError = true
                     passwordRequirementError = false
                 }
+                // if the password satisfies all requirements move into creating the account
+                // https://firebase.google.com/docs/auth/android/manage-users
+                // https://firebase.google.com/docs/firestore/manage-data/add-data
+                // followed and combined code from above with the help of AI in order to
+                // create the accounts and store them in firestore
                 else {
                     passwordError = false
                     passwordRequirementError = false
@@ -282,27 +302,15 @@ fun CreateAccountScreen(
                                     .addOnSuccessListener {
                                         onLoginClick()
                                     }
-                                    .addOnFailureListener { exception ->
-                                        Log.e(
-                                            "Firestore",
-                                            "Failed to save user information",
-                                            exception
-                                        )
-                                    }
+
                             }
 
-                        } else {
-                            Log.e(
-                                "FirebaseAuth",
-                                "Account creation failed",
-                                task.exception
-                            )
                         }
                     }
                 }
             },
 
-            // KEEP YOUR EXISTING BUTTON SETTINGS HERE
+            // only enable the button if the email address is an email and all fields contain text
             enabled = Patterns.EMAIL_ADDRESS.matcher(email).matches()
                     && password.isNotBlank()
                     && firstName.isNotBlank()
@@ -321,6 +329,7 @@ fun CreateAccountScreen(
             Text("Create Account")
         }
 
+        // used when the password requirements are not met
         Column(
             modifier = Modifier.padding(horizontal = 24.dp)
         ) {
