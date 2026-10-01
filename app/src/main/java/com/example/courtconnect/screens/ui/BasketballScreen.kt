@@ -43,6 +43,8 @@ import com.google.maps.android.compose.rememberUpdatedMarkerState
 
 import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 
 import com.google.android.gms.location.LocationServices
 import com.google.android.libraries.places.api.Places
@@ -53,6 +55,12 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberUpdatedMarkerState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.ui.Alignment
 
 @Preview(
     showBackground = true,
@@ -63,6 +71,10 @@ fun BasketballScreen() {
 
     var basketballCourts by remember {
         mutableStateOf<List<Place>>(emptyList())
+    }
+
+    var userLocation by remember {
+        mutableStateOf<LatLng?>(null)
     }
 
     val cameraPositionState = rememberCameraPositionState()
@@ -103,14 +115,16 @@ fun BasketballScreen() {
 
                     if (location != null) {
 
-                        val userLocation = LatLng(
+                        val currentLocation = LatLng(
                             location.latitude,
                             location.longitude
                         )
 
+                        userLocation = currentLocation
+
                         cameraPositionState.position =
                             CameraPosition.fromLatLngZoom(
-                                userLocation,
+                                currentLocation,
                                 13f
                             )
 
@@ -123,7 +137,7 @@ fun BasketballScreen() {
                         )
 
                         val searchArea = CircularBounds.newInstance(
-                            userLocation,
+                            currentLocation,
                             16000.0
                         )
 
@@ -154,6 +168,27 @@ fun BasketballScreen() {
         }
     }
 
+    // https://kotlinlang.org/api/core/kotlin-stdlib/kotlin.collections/sorted-by.html
+    val sortedBasketballCourts = remember(
+        basketballCourts,
+        userLocation
+    ) {
+        val location = userLocation
+
+        if (location != null) {
+            basketballCourts.sortedBy { court ->
+
+                court.location?.let { courtLocation ->
+                    calculateDistanceMiles(
+                        location,
+                        courtLocation
+                    )
+                } ?: Float.MAX_VALUE
+            }
+        } else {
+            basketballCourts
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -237,47 +272,151 @@ fun BasketballScreen() {
                 ),
                 textAlign = TextAlign.Center
             )
+            // https://developer.android.com/develop/ui/compose/lists?authuser=1&hl=en
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
             ) {
-                items(basketballCourts) { court ->
+                items(sortedBasketballCourts) { court ->
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                horizontal = 16.dp,
-                                vertical = 10.dp
-                            )
+                    val distance = if (
+                        userLocation != null &&
+                        court.location != null
                     ) {
-
-                        Text(
-                            text = court.displayName ?: "Basketball Court",
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Bold
+                        calculateDistanceMiles(
+                            userLocation!!,
+                            court.location!!
                         )
-
-                        court.rating?.let { rating ->
-                            Text(
-                                text = "⭐ $rating",
-                                fontSize = 14.sp
-                            )
-                        }
-
-                        court.formattedAddress?.let { address ->
-                            Text(
-                                text = address,
-                                fontSize = 14.sp,
-                                color = Color.Gray
-                            )
-                        }
+                    } else {
+                        null
                     }
+
+                    CourtCard(
+                        court = court,
+                        distanceMiles = distance,
+                        onCheckInClick = {
+                            // Firebase later
+                        }
+                    )
                 }
             }
         }
-
     }
+}
+
+// https://developer.android.com/develop/ui/compose/components/card?authuser=96
+// https://developer.android.com/reference/kotlin/androidx/compose/material3/CardDefaults
+@Composable
+fun CourtCard(
+    court: Place,
+    distanceMiles: Float?,
+    onCheckInClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFDCDBDB)
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 3.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+
+            // Court name
+            Text(
+                text = court.displayName ?: "Basketball Court",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            // Address
+            court.formattedAddress?.let { address ->
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = address,
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Rating and distance
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+
+                court.rating?.let { rating ->
+                    Text(
+                        text = "⭐ $rating",
+                        fontSize = 14.sp
+                    )
+                }
+
+                distanceMiles?.let { distance ->
+                    Text(
+                        text = "%.1f miles away".format(distance),
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Future check-in area
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+
+                Text(
+                    text = "👥 0 players here",
+                    fontSize = 14.sp,
+                    color = Color.Gray
+                )
+
+                Button(
+                    onClick = onCheckInClick,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFFF5722)
+                    )
+                ) {
+                    Text("Check In")
+                }
+            }
+        }
+    }
+}
+
+// https://developer.android.com/reference/android/location/Location#distanceBetween(double,double,double,double,float[])
+fun calculateDistanceMiles(
+    userLocation: LatLng,
+    courtLocation: LatLng
+): Float {
+
+    val results = FloatArray(1)
+
+    android.location.Location.distanceBetween(
+        userLocation.latitude,
+        userLocation.longitude,
+        courtLocation.latitude,
+        courtLocation.longitude,
+        results
+    )
+
+    return results[0] / 1609.344f
 }
 
