@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -43,6 +41,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun HomeScreenWithFirebase(
+    onHomeClick: () -> Unit,
     onBasketballClick: () -> Unit,
     onTennisClick: () -> Unit,
     onPickleballClick: () -> Unit
@@ -71,6 +70,7 @@ fun HomeScreenWithFirebase(
 
     HomeScreen(
         firstName = firstName,
+        onHomeClick = onHomeClick,
         onBasketballClick = onBasketballClick,
         onTennisClick = onTennisClick,
         onPickleballClick = onPickleballClick
@@ -83,6 +83,7 @@ fun HomeScreenWithFirebase(
 @Composable
 fun HomeScreen(
     firstName: String,
+    onHomeClick: () -> Unit,
     onBasketballClick: () -> Unit,
     onTennisClick: () -> Unit,
     onPickleballClick: () -> Unit
@@ -96,7 +97,13 @@ fun HomeScreen(
             LogoTopApp()
         },
         bottomBar = {
-            SportsNavigationBottom()
+            SportsNavigationBottom(
+                selectedRoute = "home",
+                onHomeClick = onHomeClick,
+                onTennisClick = onTennisClick,
+                onBasketballClick = onBasketballClick,
+                onPickleballClick = onPickleballClick
+            )
         }
     ) { // inner padding which refers to the inner dimensions of the scaffold
         innerPadding ->
@@ -260,113 +267,120 @@ fun SportsCardCreate(
 // https://developer.android.com/develop/ui/compose/components/navigation-bar
 // navigation bar which is used to move between the different sports pages
 // this remains at bottom of screen through all home screen pages once logged in
+
 @Composable
-fun SportsNavigationBottom() {
+fun SportsNavigationBottom(
+    selectedRoute: String,
+    onHomeClick: () -> Unit,
+    onTennisClick: () -> Unit,
+    onBasketballClick: () -> Unit,
+    onPickleballClick: () -> Unit
+) {
 
-    Column{
-    HorizontalDivider(
-        thickness = 2.dp,
-        color = Color(0xFF4A7000)
-    )
+    Column {
 
-    NavigationBar(
-        containerColor = Color.White
-    ) {
+        HorizontalDivider(
+            thickness = 2.dp,
+            color = Color(0xFF4A7000)
+        )
 
-        NavigationBarItem(
-            selected = false,
-            onClick = {
-                // Home navigation later
-            },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Home,
-                    contentDescription = "Home"
+        NavigationBar(
+            containerColor = Color.White
+        ) {
+
+            // Home navigation
+            NavigationBarItem(
+                selected = selectedRoute == "home",
+                onClick = onHomeClick,
+                icon = {
+                    Icon(
+                        imageVector = Icons.Default.Home,
+                        contentDescription = "Home"
+                    )
+                },
+                label = {
+                    Text("Home")
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color.White,
+                    selectedTextColor = Color(0xFF6A9F01),
+                    indicatorColor = Color(0xFF6A9F01)
                 )
-            },
-            label = {
-                Text("Home")
-            },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color.White,
-                selectedTextColor = Color(0xFF6A9F01),
-                indicatorColor = Color(0xFF6A9F01)
             )
-        )
 
-        NavigationBarItem(
-            selected = false,
-            onClick = {
-                // Tennis navigation later
-            },
-            icon = {
-                Text("🎾")
-            },
-            label = {
-                Text("Tennis")
-            },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color.White,
-                selectedTextColor = Color(0xFF6A9F01),
-                indicatorColor = Color(0xFF6A9F01)
+            // Tennis navigation
+            NavigationBarItem(
+                selected = selectedRoute == "tennis",
+                onClick = onTennisClick,
+                icon = {
+                    Text("🎾")
+                },
+                label = {
+                    Text("Tennis")
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color.White,
+                    selectedTextColor = Color(0xFF6A9F01),
+                    indicatorColor = Color(0xFF6A9F01)
+                )
             )
-        )
 
-        NavigationBarItem(
-            selected = true,
-            onClick = {
-                // Basketball navigation later
-            },
-            icon = {
-                Text("🏀")
-            },
-            label = {
-                Text("Basketball")
-            },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color.White,
-                selectedTextColor = Color(0xFF6A9F01),
-                indicatorColor = Color(0xFF6A9F01)
+            // Basketball navigation
+            NavigationBarItem(
+                selected = selectedRoute == "basketball",
+                onClick = onBasketballClick,
+                icon = {
+                    Text("🏀")
+                },
+                label = {
+                    Text("Basketball")
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color.White,
+                    selectedTextColor = Color(0xFF6A9F01),
+                    indicatorColor = Color(0xFF6A9F01)
+                )
             )
-        )
 
-        NavigationBarItem(
-            selected = false,
-            onClick = {
-                // Pickleball navigation later
-            },
-            icon = {
-                Text("🏓")
-            },
-            label = {
-                Text("Pickleball")
-            },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color.White,
-                selectedTextColor = Color(0xFF4A7000),
-                indicatorColor = Color(0xFF4A7000)
+            // Pickleball navigation
+            NavigationBarItem(
+                selected = selectedRoute == "pickleball",
+                onClick = onPickleballClick,
+                icon = {
+                    Text("🏓")
+                },
+                label = {
+                    Text("Pickleball")
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color.White,
+                    selectedTextColor = Color(0xFF4A7000),
+                    indicatorColor = Color(0xFF4A7000)
+                )
             )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = {
-                // Social navigation later
-            },
-            icon = {
-                Text("🛜")
-            },
-            label = {
-                Text("Connect")
-            },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color.White,
-                selectedTextColor = Color(0xFF4A7000),
-                indicatorColor = Color(0xFF4A7000)
+
+            // Connect navigation - will be implemented later
+            NavigationBarItem(
+                selected = selectedRoute == "connect",
+                onClick = {
+                    // Social navigation later
+                },
+                icon = {
+                    Text("🛜")
+                },
+                label = {
+                    Text("Connect")
+                },
+                colors = NavigationBarItemDefaults.colors(
+                    selectedIconColor = Color.White,
+                    selectedTextColor = Color(0xFF4A7000),
+                    indicatorColor = Color(0xFF4A7000)
+                )
             )
-        )
+        }
     }
 }
-}
+
 
 // used as a temporary holder for what will later be the social media aspect of this project
 @Composable
@@ -458,6 +472,7 @@ fun HomeScreenPreview() {
 
     HomeScreen(
         firstName = "Ryan",
+        onHomeClick = {},
         onBasketballClick = {},
         onTennisClick = {},
         onPickleballClick = {}

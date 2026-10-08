@@ -1,34 +1,19 @@
 package com.example.courtconnect
 
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.courtconnect.ui.theme.CourtConnectTheme
-import com.google.firebase.FirebaseApp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.courtconnect.screens.ui.LoginScreen
+import com.example.courtconnect.screens.ui.BasketballScreen
 import com.example.courtconnect.screens.ui.CreateAccountScreen
 import com.example.courtconnect.screens.ui.ForgotPasswordScreen
-import com.example.courtconnect.screens.ui.HomeScreen
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.ui.graphics.Color
-import com.example.courtconnect.screens.ui.BasketballScreen
-import com.example.courtconnect.screens.ui.TennisScreen
-import com.example.courtconnect.screens.ui.PickleBallScreen
 import com.example.courtconnect.screens.ui.HomeScreenWithFirebase
+import com.example.courtconnect.screens.ui.LoginScreen
+import com.example.courtconnect.screens.ui.PickleBallScreen
+import com.example.courtconnect.screens.ui.TennisScreen
+import com.example.courtconnect.ui.theme.CourtConnectTheme
 import com.google.android.libraries.places.api.Places
 
 class MainActivity : ComponentActivity() {
@@ -53,6 +38,17 @@ class MainActivity : ComponentActivity() {
 
                 // create nav controller used to move around from login, create account, forgot password and home
                 val navController = rememberNavController()
+
+                // https://developer.android.com/guide/navigation/backstack/multi-back-stacks
+                fun navigateToTab(route: String) {
+                    navController.navigate(route) {
+                        popUpTo("home") {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
 
                 NavHost(
                     navController = navController,
@@ -104,31 +100,61 @@ class MainActivity : ComponentActivity() {
                     // Home screen
                     composable("home") {
                         HomeScreenWithFirebase(
+                            onHomeClick = {},
                             onBasketballClick = {
-                                navController.navigate("basketball")
+                                navigateToTab("basketball")
                             },
                             onTennisClick = {
-                                navController.navigate("tennis")
+                                navigateToTab("tennis")
                             },
                             onPickleballClick = {
-                                navController.navigate("pickleball")
+                                navigateToTab("pickleball")
+                            }
+                        )
+                    }
+                    composable("basketball") {
+                        BasketballScreen(
+                            onHomeClick = {
+                                navigateToTab("home")
+                            },
+                            onTennisClick = {
+                                navigateToTab("tennis")
+                            },
+                            onBasketballClick = {},
+                            onPickleballClick = {
+                                navigateToTab("pickleball")
                             }
                         )
                     }
 
-                    // Basketball screen
-                    composable("basketball") {
-                        BasketballScreen()
-                    }
-
-                    // Tennis screen
                     composable("tennis") {
-                        TennisScreen()
+                        TennisScreen(
+                            onHomeClick = {
+                                navigateToTab("home")
+                            },
+                            onTennisClick = {},
+                            onBasketballClick = {
+                                navigateToTab("basketball")
+                            },
+                            onPickleballClick = {
+                                navigateToTab("pickleball")
+                            }
+                        )
                     }
 
-                    // Pickleball screen
                     composable("pickleball") {
-                        PickleBallScreen()
+                        PickleBallScreen(
+                            onHomeClick = {
+                                navigateToTab("home")
+                            },
+                            onTennisClick = {
+                                navigateToTab("tennis")
+                            },
+                            onBasketballClick = {
+                                navigateToTab("basketball")
+                            },
+                            onPickleballClick = {}
+                        )
                     }
                 }
             }
