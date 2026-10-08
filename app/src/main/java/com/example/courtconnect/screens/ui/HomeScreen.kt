@@ -42,7 +42,11 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
-fun HomeScreenWithFirebase() {
+fun HomeScreenWithFirebase(
+    onBasketballClick: () -> Unit,
+    onTennisClick: () -> Unit,
+    onPickleballClick: () -> Unit
+) {
 
     var firstName by remember { mutableStateOf("") }
 
@@ -66,7 +70,10 @@ fun HomeScreenWithFirebase() {
     }
 
     HomeScreen(
-        firstName = firstName
+        firstName = firstName,
+        onBasketballClick = onBasketballClick,
+        onTennisClick = onTennisClick,
+        onPickleballClick = onPickleballClick
     )
 }
 
@@ -75,7 +82,10 @@ fun HomeScreenWithFirebase() {
 // Does not directly use Firebase, so Preview can display it
 @Composable
 fun HomeScreen(
-    firstName: String
+    firstName: String,
+    onBasketballClick: () -> Unit,
+    onTennisClick: () -> Unit,
+    onPickleballClick: () -> Unit
 ) {
 
     // https://developer.android.com/develop/ui/compose/quick-guides/content/create-scaffold
@@ -127,36 +137,29 @@ fun HomeScreen(
             )
 
             //
+            // Tennis card
             SportsCardCreate(
                 title = "🎾 Tennis",
                 description = "Find tennis courts near you",
-            onClick = {
-                    // Navigate to Tennis page
-                }
+                onClick = onTennisClick
             )
 
-            Spacer(
-                modifier = Modifier.height(6.dp)
-            )
+            Spacer(modifier = Modifier.height(6.dp))
 
+            // Basketball card
             SportsCardCreate(
                 title = "🏀 Basketball",
                 description = "Find basketball courts near you",
-                onClick = {
-                    // Navigate to Basketball page
-                }
+                onClick = onBasketballClick
             )
 
-            Spacer(
-                modifier = Modifier.height(6.dp)
-            )
+            Spacer(modifier = Modifier.height(6.dp))
 
+            // Pickleball card
             SportsCardCreate(
                 title = "🥒🏸 Pickleball",
                 description = "Find pickleball courts near you",
-                onClick = {
-                    // Navigate to Pickleball page
-                }
+                onClick = onPickleballClick
             )
 
             Spacer(
@@ -454,6 +457,9 @@ fun LogoTopApp() {
 fun HomeScreenPreview() {
 
     HomeScreen(
-        firstName = "Ryan"
+        firstName = "Ryan",
+        onBasketballClick = {},
+        onTennisClick = {},
+        onPickleballClick = {}
     )
 }

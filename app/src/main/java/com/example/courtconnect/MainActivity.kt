@@ -101,7 +101,33 @@ class MainActivity : ComponentActivity() {
 
                     // home screen navigation
                     // no button to return to login screen so not needed here
-                    composable(route = "home") {
+                    // Home screen
+                    composable("home") {
+                        HomeScreenWithFirebase(
+                            onBasketballClick = {
+                                navController.navigate("basketball")
+                            },
+                            onTennisClick = {
+                                navController.navigate("tennis")
+                            },
+                            onPickleballClick = {
+                                navController.navigate("pickleball")
+                            }
+                        )
+                    }
+
+                    // Basketball screen
+                    composable("basketball") {
+                        BasketballScreen()
+                    }
+
+                    // Tennis screen
+                    composable("tennis") {
+                        TennisScreen()
+                    }
+
+                    // Pickleball screen
+                    composable("pickleball") {
                         PickleBallScreen()
                     }
                 }
