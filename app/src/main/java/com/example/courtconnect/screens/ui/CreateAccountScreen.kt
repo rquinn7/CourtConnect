@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -60,6 +62,8 @@ fun CreateAccountScreen(
     var firstName by remember() { mutableStateOf("") }
     var lastName by remember() { mutableStateOf("") }
     var email by remember() {mutableStateOf("")}
+    var username by remember() {mutableStateOf("")}
+    var usernameError by remember { mutableStateOf("") }
     var password by remember() {mutableStateOf("")}
     // displays the password which is entered in the textbox
     var passwordVisible by remember { mutableStateOf(false) }
@@ -70,6 +74,15 @@ fun CreateAccountScreen(
     // if the password does not satisfy requirements send an error
     var passwordRequirementError by remember { mutableStateOf(false) }
 
+    val normalizedUsername = username.trim().lowercase()
+
+    val usernameIsValid = normalizedUsername.matches(
+        Regex("^[a-z0-9_]{3,20}$")
+    )
+
+    var registrationError by remember { mutableStateOf("") }
+    var isRegistering by remember { mutableStateOf(false) }
+
     // variables used for firebase
     // used to authorize account and access to firebase
     val auth = FirebaseAuth.getInstance()
@@ -77,8 +90,9 @@ fun CreateAccountScreen(
     val db = FirebaseFirestore.getInstance()
 
     Column(
-        modifier = Modifier.fillMaxSize(),
-            //.padding(horizontal = 12.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     )
@@ -161,6 +175,32 @@ fun CreateAccountScreen(
             )
         )
 
+        // username text field
+        OutlinedTextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Username") },
+            placeholder = { Text("Choose a username") },
+            singleLine = true,
+            shape = RoundedCornerShape(25.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF5B9808),
+                focusedLabelColor = Color(0xFF5B9808)
+            ),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Text
+            ),
+            isError = usernameError.isNotEmpty()
+        )
+
+        if (usernameError.isNotEmpty()) {
+            Text(
+                text = usernameError,
+                color = Color.Red,
+                fontSize = 14.sp
+            )
+        }
+
         Column(
             modifier = Modifier.padding(horizontal = 24.dp)
         ) {
@@ -170,6 +210,8 @@ fun CreateAccountScreen(
             modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically)
         )
             }
+
+
 
         // password text field
         OutlinedTextField(
@@ -255,32 +297,53 @@ fun CreateAccountScreen(
 
         Spacer(Modifier.height(10.dp))
         // button which is used to attempt to create the account
+
+        if (registrationError.isNotEmpty()) {
+            Text(
+                text = registrationError,
+                color = Color.Red,
+                fontSize = 14.sp,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
+        }
+
         Button(
             onClick = {
 
-                // if the password does not satisfy the password requirements
-                // display the error associated
-                if (!passwordIsSecure) {
+                // Check if the username meets the requirements
+                if (!usernameIsValid) {
+                    usernameError = "Username must be 3-20 characters and contain only letters, numbers, or underscores."
+                    passwordError = false
+                    passwordRequirementError = false
+                }
+
+                // Check if the password meets the requirements
+                else if (!passwordIsSecure) {
+                    usernameError = ""
                     passwordRequirementError = true
                     passwordError = false
                 }
-                // if the password does not match the confirmed password
-                // display the error associated
+
+                // Check if the passwords match
                 else if (password != passwordConfirmed) {
+                    usernameError = ""
                     passwordError = true
                     passwordRequirementError = false
                 }
-                // if the password satisfies all requirements move into creating the account
-                // https://firebase.google.com/docs/auth/android/manage-users
-                // https://firebase.google.com/docs/firestore/manage-data/add-data
-                // followed and combined code from above with the help of AI in order to
-                // create the accounts and store them in firestore
+
+                // All validation checks passed
                 else {
+                    usernameError = ""
                     passwordError = false
                     passwordRequirementError = false
 
+                    // Create the Firebase Authentication account
+
+                    isRegistering = true
+                    registrationError = ""
+
                     auth.createUserWithEmailAndPassword(
-                        email,
+                        email.trim(),
                         password
                     ).addOnCompleteListener { task ->
 
@@ -290,32 +353,93 @@ fun CreateAccountScreen(
 
                             if (user != null) {
 
+                                val usernameRef = db.collection("usernames")
+                                    .document(normalizedUsername)
+
+                                val userRef = db.collection("users")
+                                    .document(user.uid)
+
                                 val userData = hashMapOf(
-                                    "firstName" to firstName,
-                                    "lastName" to lastName,
-                                    "email" to email
+                                    "firstName" to firstName.trim(),
+                                    "lastName" to lastName.trim(),
+                                    "username" to normalizedUsername,
+                                    "email" to email.trim()
                                 )
 
-                                db.collection("users")
-                                    .document(user.uid)
-                                    .set(userData)
-                                    .addOnSuccessListener {
-                                        onLoginClick()
+                                db.runTransaction { transaction ->
+
+                                    // Check whether the username already exists
+                                    val usernameDocument = transaction.get(usernameRef)
+
+                                    if (usernameDocument.exists()) {
+                                        throw IllegalStateException(
+                                            "This username is already taken."
+                                        )
                                     }
 
+                                    // Reserve the username
+                                    transaction.set(
+                                        usernameRef,
+                                        hashMapOf("uid" to user.uid)
+                                    )
+
+                                    // Save the user's profile
+                                    transaction.set(userRef, userData)
+
+                                    null
+
+                                }.addOnSuccessListener {
+
+                                    isRegistering = false
+                                    onLoginClick()
+
+                                }.addOnFailureListener { exception ->
+
+                                    registrationError =
+                                        exception.message ?: "Unable to create account."
+
+                                    Log.e(
+                                        "CourtConnect",
+                                        "Username registration failed",
+                                        exception
+                                    )
+
+                                    // Remove the newly created Auth account
+                                    // because its Firestore profile was not saved.
+                                    user.delete().addOnCompleteListener { deleteTask ->
+                                        isRegistering = false
+
+                                        if (!deleteTask.isSuccessful) {
+                                            registrationError =
+                                                "Registration failed and the account could not be cleaned up. Please contact support."
+                                        }
+                                    }
+                                }
+
+                            } else {
+                                isRegistering = false
+                                registrationError = "Unable to retrieve Firebase user."
                             }
 
+                        } else {
+                            isRegistering = false
+                            registrationError =
+                                task.exception?.localizedMessage
+                                    ?: "Unable to create account."
                         }
                     }
+
                 }
             },
 
-            // only enable the button if the email address is an email and all fields contain text
+            // Only enable button when all required fields contain text
             enabled = Patterns.EMAIL_ADDRESS.matcher(email).matches()
                     && password.isNotBlank()
                     && firstName.isNotBlank()
                     && lastName.isNotBlank()
-                    && passwordConfirmed.isNotBlank(),
+                    && username.isNotBlank()
+                    && passwordConfirmed.isNotBlank()
+                    && !isRegistering,
 
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF5B9808)
@@ -326,8 +450,12 @@ fun CreateAccountScreen(
                 .height(52.dp)
 
         ) {
-            Text("Create Account")
+            Text(
+                if (isRegistering) "Creating Account..."
+                else "Create Account"
+            )
         }
+
 
         // used when the password requirements are not met
         Column(
