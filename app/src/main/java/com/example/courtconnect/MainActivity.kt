@@ -15,6 +15,7 @@ import com.example.courtconnect.screens.ui.PickleBallScreen
 import com.example.courtconnect.screens.ui.TennisScreen
 import com.example.courtconnect.ui.theme.CourtConnectTheme
 import com.google.android.libraries.places.api.Places
+import com.example.courtconnect.screens.ui.UserAccountScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -109,6 +110,9 @@ class MainActivity : ComponentActivity() {
                             },
                             onPickleballClick = {
                                 navigateToTab("pickleball")
+                            },
+                            onProfileClick = {
+                                navController.navigate("userAccount")
                             }
                         )
                     }
@@ -154,6 +158,27 @@ class MainActivity : ComponentActivity() {
                                 navigateToTab("basketball")
                             },
                             onPickleballClick = {}
+                        )
+                    }
+                    // Profile screen navigation
+                    composable("userAccount") {
+                        UserAccountScreen(
+                            onBackClick = {
+                                navController.navigate("home") {
+                                    popUpTo("home") {
+                                        inclusive = false
+                                    }
+                                    launchSingleTop = true
+                                }
+                            },
+                            onLogoutClick = {
+                                navController.navigate("login") {
+                                    popUpTo(navController.graph.id) {
+                                        inclusive = true
+                                    }
+                                    launchSingleTop = true
+                                }
+                            }
                         )
                     }
                 }

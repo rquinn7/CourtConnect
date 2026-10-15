@@ -3,19 +3,23 @@ package com.example.courtconnect.screens.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -44,7 +48,8 @@ fun HomeScreenWithFirebase(
     onHomeClick: () -> Unit,
     onBasketballClick: () -> Unit,
     onTennisClick: () -> Unit,
-    onPickleballClick: () -> Unit
+    onPickleballClick: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
 
     var firstName by remember { mutableStateOf("") }
@@ -73,7 +78,8 @@ fun HomeScreenWithFirebase(
         onHomeClick = onHomeClick,
         onBasketballClick = onBasketballClick,
         onTennisClick = onTennisClick,
-        onPickleballClick = onPickleballClick
+        onPickleballClick = onPickleballClick,
+        onProfileClick = onProfileClick
     )
 }
 
@@ -86,7 +92,8 @@ fun HomeScreen(
     onHomeClick: () -> Unit,
     onBasketballClick: () -> Unit,
     onTennisClick: () -> Unit,
-    onPickleballClick: () -> Unit
+    onPickleballClick: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
 
     // https://developer.android.com/develop/ui/compose/quick-guides/content/create-scaffold
@@ -94,7 +101,24 @@ fun HomeScreen(
     // sports pages at the bottom
     Scaffold(
         topBar = {
-            LogoTopApp()
+            Box {
+                LogoTopApp()
+
+                IconButton(
+                    onClick = onProfileClick,
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(top = 24.dp, end = 12.dp)
+                        .size(56.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "My Account",
+                        tint = Color(0xFF5B9808),
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+            }
         },
         bottomBar = {
             SportsNavigationBottom(
@@ -475,6 +499,7 @@ fun HomeScreenPreview() {
         onHomeClick = {},
         onBasketballClick = {},
         onTennisClick = {},
-        onPickleballClick = {}
+        onPickleballClick = {},
+        onProfileClick = {}
     )
 }
