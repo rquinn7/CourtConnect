@@ -42,6 +42,11 @@ import androidx.compose.ui.unit.sp
 import com.example.courtconnect.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.DisposableEffect
+import com.google.firebase.firestore.Query
 
 @Composable
 fun HomeScreenWithFirebase(
@@ -57,6 +62,56 @@ fun HomeScreenWithFirebase(
 
     val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
+
+    var recentPosts by remember {
+        mutableStateOf<List<SocialPost>>(emptyList())
+    }
+
+    var isLoadingRecentPosts by remember {
+        mutableStateOf(true)
+    }
+
+    var recentPostsError by remember {
+        mutableStateOf("")
+    }
+
+
+    DisposableEffect(db) {
+
+        val listener = db.collection("posts")
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .limit(3)
+            .addSnapshotListener { snapshot, error ->
+
+                if (error != null) {
+                    recentPostsError = error.localizedMessage
+                        ?: "Unable to load recent posts."
+                    isLoadingRecentPosts = false
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    recentPosts = snapshot.documents.map { document ->
+                        SocialPost(
+                            id = document.id,
+                            authorId = document.getString("authorId") ?: "",
+                            username = document.getString("username") ?: "Unknown",
+                            sport = document.getString("sport") ?: "",
+                            message = document.getString("message") ?: "",
+                            createdAt = document.getTimestamp("createdAt")
+                        )
+                    }
+
+                    recentPostsError = ""
+                    isLoadingRecentPosts = false
+                }
+            }
+
+        onDispose {
+            listener.remove()
+        }
+    }
+
 
     LaunchedEffect(Unit) {
 
@@ -81,7 +136,10 @@ fun HomeScreenWithFirebase(
         onTennisClick = onTennisClick,
         onPickleballClick = onPickleballClick,
         onProfileClick = onProfileClick,
-        onConnectClick = onConnectClick
+        onConnectClick = onConnectClick,
+        recentPosts = recentPosts,
+        isLoadingRecentPosts = isLoadingRecentPosts,
+        recentPostsError = recentPostsError
     )
 }
 
@@ -96,7 +154,10 @@ fun HomeScreen(
     onTennisClick: () -> Unit,
     onPickleballClick: () -> Unit,
     onProfileClick: () -> Unit,
-    onConnectClick: () -> Unit
+    onConnectClick: () -> Unit,
+    recentPosts: List<SocialPost> = emptyList(),
+    isLoadingRecentPosts: Boolean = false,
+    recentPostsError: String = ""
 ) {
 
     // https://developer.android.com/develop/ui/compose/quick-guides/content/create-scaffold
@@ -138,8 +199,9 @@ fun HomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color(0xFFFFFFFF))
+                .background(Color.White)
                 .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = 24.dp)
@@ -223,18 +285,55 @@ fun HomeScreen(
                     modifier = Modifier.height(10.dp)
                 )
 
-                CommunityPost(
-                    name = "Alex",
-                    sport = "🏀 Basketball",
-                    message = "Anyone looking to play basketball tonight?"
-                )
 
+                when {
+                    isLoadingRecentPosts -> {
+                        Text(
+                            text = "Loading recent posts...",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    }
 
-                CommunityPost(
-                    name = "Joe",
-                    sport = "🎾 Tennis",
-                    message = "Anyone looking to play tennis tonight?"
-                )
+                    recentPostsError.isNotEmpty() -> {
+                        Text(
+                            text = recentPostsError,
+                            color = Color.Red,
+                            fontSize = 14.sp
+                        )
+                    }
+
+                    recentPosts.isEmpty() -> {
+                        Text(
+                            text = "No community posts yet.",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    }
+
+                    else -> {
+                        recentPosts.forEach { post ->
+                            SocialPostCard(post = post)
+
+                            Spacer(modifier = Modifier.height(12.dp))
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                TextButton(
+                    onClick = onConnectClick,
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(
+                        text = "See All Posts →",
+                        color = Color(0xFF5B9808),
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
             }
         }
     }
@@ -409,59 +508,6 @@ fun SportsNavigationBottom(
 }
 
 
-// used as a temporary holder for what will later be the social media aspect of this project
-@Composable
-fun CommunityPost(
-    name: String,
-    sport: String,
-    message: String
-) {
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFF5F5F5)
-        )
-    ) {
-
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-
-            Text(
-                text = name,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                text = sport,
-                fontSize = 13.sp,
-                color = Color(0xFF4A7000)
-            )
-
-            Spacer(
-                modifier = Modifier.height(8.dp)
-            )
-
-            Text(
-                text = message,
-                fontSize = 15.sp
-            )
-
-            Spacer(
-                modifier = Modifier.height(10.dp)
-            )
-
-            Text(
-                text = "♡ Like     💬 Comment",
-                fontSize = 13.sp,
-                color = Color.Gray
-            )
-
-        }
-    }
-}
 // used to hold the logo at the top of all the screens, this aspect remains at top of page for entire
 // time while logged in
 @Composable

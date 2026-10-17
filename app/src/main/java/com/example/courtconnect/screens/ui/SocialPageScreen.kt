@@ -13,11 +13,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 private val SocialGreen = Color(0xFF5B9808)
+data class SocialPost(
+    val id: String,
+    val authorId: String,
+    val username: String,
+    val sport: String,
+    val message: String,
+    val createdAt: Timestamp?
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +49,46 @@ fun SocialPageScreen(
 
     val auth = remember { FirebaseAuth.getInstance() }
     val db = remember { FirebaseFirestore.getInstance() }
+
+    var posts by remember { mutableStateOf<List<SocialPost>>(emptyList()) }
+    var isLoadingPosts by remember { mutableStateOf(true) }
+    var feedError by remember { mutableStateOf("") }
+
+
+    DisposableEffect(db) {
+        val listener = db.collection("posts")
+            .orderBy("createdAt", Query.Direction.DESCENDING)
+            .addSnapshotListener { snapshot, error ->
+
+                if (error != null) {
+                    feedError = error.localizedMessage
+                        ?: "Failed to load community posts."
+                    isLoadingPosts = false
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    posts = snapshot.documents.map { document ->
+                        SocialPost(
+                            id = document.id,
+                            authorId = document.getString("authorId") ?: "",
+                            username = document.getString("username") ?: "Unknown",
+                            sport = document.getString("sport") ?: "",
+                            message = document.getString("message") ?: "",
+                            createdAt = document.getTimestamp("createdAt")
+                        )
+                    }
+
+                    feedError = ""
+                    isLoadingPosts = false
+                }
+            }
+
+        onDispose {
+            listener.remove()
+        }
+    }
+
 
     Scaffold(
         topBar = {
@@ -263,11 +315,160 @@ fun SocialPageScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+
+            when {
+                isLoadingPosts -> {
+                    CircularProgressIndicator(
+                        color = SocialGreen
+                    )
+                }
+
+                feedError.isNotEmpty() -> {
+                    Text(
+                        text = feedError,
+                        color = MaterialTheme.colorScheme.error,
+                        fontSize = 14.sp
+                    )
+                }
+
+                posts.isEmpty() -> {
+                    Text(
+                        text = "No community posts yet. Be the first to post!",
+                        color = Color.Gray,
+                        fontSize = 14.sp
+                    )
+                }
+
+                else -> {
+                    posts.forEach { post ->
+                        SocialPostCard(post = post)
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
+            }
+
+        }
+    }
+
+    @Composable
+    fun SocialPostCard(post: SocialPost) {
+
+        val sportLabel = when (post.sport) {
+            "Basketball" -> "🏀 Basketball"
+            "Tennis" -> "🎾 Tennis"
+            "Pickleball" -> "🏓 Pickleball"
+            else -> post.sport
+        }
+
+        val formattedDate = remember(post.createdAt) {
+            post.createdAt?.toDate()?.let { date ->
+                SimpleDateFormat(
+                    "MMM d, yyyy 'at' h:mm a",
+                    Locale.getDefault()
+                ).format(date)
+            } ?: "Just now"
+        }
+
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color(0xFFF5F5F5)
+            )
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+
+                Text(
+                    text = "@${post.username}",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = sportLabel,
+                    fontSize = 13.sp,
+                    color = Color(0xFF4A7000)
+                )
+
+                Text(
+                    text = formattedDate,
+                    fontSize = 12.sp,
+                    color = Color.Gray
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = post.message,
+                    fontSize = 15.sp
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SocialPostCard(post: SocialPost) {
+
+    val sportLabel = when (post.sport) {
+        "Basketball" -> "🏀 Basketball"
+        "Tennis" -> "🎾 Tennis"
+        "Pickleball" -> "🏓 Pickleball"
+        else -> post.sport
+    }
+
+    val formattedDate = remember(post.createdAt) {
+        post.createdAt?.toDate()?.let { date ->
+            SimpleDateFormat(
+                "MMM d, yyyy 'at' h:mm a",
+                Locale.getDefault()
+            ).format(date)
+        } ?: "Just now"
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFF5F5F5)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+
             Text(
-                text = "Posts from other players will appear here.",
-                color = Color.Gray,
-                fontSize = 14.sp
+                text = "@${post.username}",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = sportLabel,
+                fontSize = 13.sp,
+                color = Color(0xFF4A7000)
+            )
+
+            Text(
+                text = formattedDate,
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = post.message,
+                fontSize = 15.sp
             )
         }
     }
 }
+
