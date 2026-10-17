@@ -16,6 +16,7 @@ import com.example.courtconnect.screens.ui.TennisScreen
 import com.example.courtconnect.ui.theme.CourtConnectTheme
 import com.google.android.libraries.places.api.Places
 import com.example.courtconnect.screens.ui.UserAccountScreen
+import com.example.courtconnect.screens.ui.SocialPageScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -113,6 +114,9 @@ class MainActivity : ComponentActivity() {
                             },
                             onProfileClick = {
                                 navController.navigate("userAccount")
+                            },
+                            onConnectClick = {
+                                navigateToTab("socialPage")
                             }
                         )
                     }
@@ -127,6 +131,9 @@ class MainActivity : ComponentActivity() {
                             onBasketballClick = {},
                             onPickleballClick = {
                                 navigateToTab("pickleball")
+                            },
+                            onConnectClick = {
+                                navigateToTab("socialPage")
                             }
                         )
                     }
@@ -142,6 +149,9 @@ class MainActivity : ComponentActivity() {
                             },
                             onPickleballClick = {
                                 navigateToTab("pickleball")
+                            },
+                            onConnectClick = {
+                                navigateToTab("socialPage")
                             }
                         )
                     }
@@ -157,7 +167,10 @@ class MainActivity : ComponentActivity() {
                             onBasketballClick = {
                                 navigateToTab("basketball")
                             },
-                            onPickleballClick = {}
+                            onPickleballClick = {},
+                            onConnectClick = {
+                                navigateToTab("socialPage")
+                            }
                         )
                     }
                     // Profile screen navigation
@@ -178,6 +191,23 @@ class MainActivity : ComponentActivity() {
                                     }
                                     launchSingleTop = true
                                 }
+                            }
+                        )
+                    }
+
+                    composable("socialPage") {
+                        SocialPageScreen(
+                            onHomeClick = {
+                                navigateToTab("home")
+                            },
+                            onTennisClick = {
+                                navigateToTab("tennis")
+                            },
+                            onBasketballClick = {
+                                navigateToTab("basketball")
+                            },
+                            onPickleballClick = {
+                                navigateToTab("pickleball")
                             }
                         )
                     }

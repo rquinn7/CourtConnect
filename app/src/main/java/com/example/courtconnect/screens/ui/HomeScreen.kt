@@ -49,7 +49,8 @@ fun HomeScreenWithFirebase(
     onBasketballClick: () -> Unit,
     onTennisClick: () -> Unit,
     onPickleballClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onConnectClick: () -> Unit
 ) {
 
     var firstName by remember { mutableStateOf("") }
@@ -79,7 +80,8 @@ fun HomeScreenWithFirebase(
         onBasketballClick = onBasketballClick,
         onTennisClick = onTennisClick,
         onPickleballClick = onPickleballClick,
-        onProfileClick = onProfileClick
+        onProfileClick = onProfileClick,
+        onConnectClick = onConnectClick
     )
 }
 
@@ -93,7 +95,8 @@ fun HomeScreen(
     onBasketballClick: () -> Unit,
     onTennisClick: () -> Unit,
     onPickleballClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onConnectClick: () -> Unit
 ) {
 
     // https://developer.android.com/develop/ui/compose/quick-guides/content/create-scaffold
@@ -126,7 +129,8 @@ fun HomeScreen(
                 onHomeClick = onHomeClick,
                 onTennisClick = onTennisClick,
                 onBasketballClick = onBasketballClick,
-                onPickleballClick = onPickleballClick
+                onPickleballClick = onPickleballClick,
+                onConnectClick = onConnectClick
             )
         }
     ) { // inner padding which refers to the inner dimensions of the scaffold
@@ -298,7 +302,8 @@ fun SportsNavigationBottom(
     onHomeClick: () -> Unit,
     onTennisClick: () -> Unit,
     onBasketballClick: () -> Unit,
-    onPickleballClick: () -> Unit
+    onPickleballClick: () -> Unit,
+    onConnectClick: () -> Unit
 ) {
 
     Column {
@@ -386,9 +391,7 @@ fun SportsNavigationBottom(
             // Connect navigation - will be implemented later
             NavigationBarItem(
                 selected = selectedRoute == "connect",
-                onClick = {
-                    // Social navigation later
-                },
+                onClick = onConnectClick,
                 icon = {
                     Text("🛜")
                 },
@@ -500,6 +503,7 @@ fun HomeScreenPreview() {
         onBasketballClick = {},
         onTennisClick = {},
         onPickleballClick = {},
-        onProfileClick = {}
+        onProfileClick = {},
+        onConnectClick = {}
     )
 }

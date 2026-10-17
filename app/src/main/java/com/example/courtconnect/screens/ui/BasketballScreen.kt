@@ -58,7 +58,8 @@ fun BasketballScreen(
     onHomeClick: () -> Unit,
     onTennisClick: () -> Unit,
     onBasketballClick: () -> Unit,
-    onPickleballClick: () -> Unit
+    onPickleballClick: () -> Unit,
+    onConnectClick: () -> Unit
 ) {
 
     // used to hold the locations of the basketball courts
@@ -222,7 +223,8 @@ fun BasketballScreen(
                 onHomeClick = onHomeClick,
                 onTennisClick = onTennisClick,
                 onBasketballClick = onBasketballClick,
-                onPickleballClick = onPickleballClick
+                onPickleballClick = onPickleballClick,
+                onConnectClick = onConnectClick
             )
         }
     ) { innerPadding ->
