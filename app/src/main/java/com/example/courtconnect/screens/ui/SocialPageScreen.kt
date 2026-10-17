@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +28,14 @@ data class SocialPost(
     val authorId: String,
     val username: String,
     val sport: String,
+    val message: String,
+    val createdAt: Timestamp?
+)
+
+data class SocialComment(
+    val id: String,
+    val authorId: String,
+    val username: String,
     val message: String,
     val createdAt: Timestamp?
 )
@@ -53,6 +62,18 @@ fun SocialPageScreen(
     var posts by remember { mutableStateOf<List<SocialPost>>(emptyList()) }
     var isLoadingPosts by remember { mutableStateOf(true) }
     var feedError by remember { mutableStateOf("") }
+
+    var postToDelete by remember {
+        mutableStateOf<SocialPost?>(null)
+    }
+
+    var isDeleting by remember {
+        mutableStateOf(false)
+    }
+
+    var deleteError by remember {
+        mutableStateOf("")
+    }
 
 
     DisposableEffect(db) {
@@ -315,6 +336,15 @@ fun SocialPageScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            if (deleteError.isNotEmpty()) {
+                Text(
+                    text = deleteError,
+                    color = MaterialTheme.colorScheme.error,
+                    fontSize = 14.sp
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+            }
 
             when {
                 isLoadingPosts -> {
@@ -339,81 +369,127 @@ fun SocialPageScreen(
                     )
                 }
 
+
+
+
                 else -> {
                     posts.forEach { post ->
-                        SocialPostCard(post = post)
+
+                        val currentUserId = auth.currentUser?.uid
+
+                        SocialPostCard(
+                            post = post,
+                            onDeleteClick = if (
+                                currentUserId != null &&
+                                post.authorId == currentUserId
+                            ) {
+                                {
+                                    postToDelete = post
+                                }
+                            } else {
+                                null
+                            },
+                            showCommentsButton = true
+                        )
 
                         Spacer(modifier = Modifier.height(12.dp))
                     }
                 }
+
             }
 
         }
     }
 
-    @Composable
-    fun SocialPostCard(post: SocialPost) {
 
-        val sportLabel = when (post.sport) {
-            "Basketball" -> "🏀 Basketball"
-            "Tennis" -> "🎾 Tennis"
-            "Pickleball" -> "🏓 Pickleball"
-            else -> post.sport
-        }
+    if (postToDelete != null) {
 
-        val formattedDate = remember(post.createdAt) {
-            post.createdAt?.toDate()?.let { date ->
-                SimpleDateFormat(
-                    "MMM d, yyyy 'at' h:mm a",
-                    Locale.getDefault()
-                ).format(date)
-            } ?: "Just now"
-        }
+        AlertDialog(
+            onDismissRequest = {
+                if (!isDeleting) {
+                    postToDelete = null
+                }
+            },
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = Color(0xFFF5F5F5)
-            )
-        ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
+            title = {
+                Text("Delete Post?")
+            },
 
+            text = {
                 Text(
-                    text = "@${post.username}",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    "Are you sure you want to delete this post? " +
+                            "This action cannot be undone."
                 )
+            },
 
-                Spacer(modifier = Modifier.height(4.dp))
+            confirmButton = {
+                TextButton(
+                    enabled = !isDeleting,
+                    onClick = {
+                        val post = postToDelete
+                        val currentUserId = auth.currentUser?.uid
 
-                Text(
-                    text = sportLabel,
-                    fontSize = 13.sp,
-                    color = Color(0xFF4A7000)
-                )
+                        if (
+                            post != null &&
+                            currentUserId != null &&
+                            post.authorId == currentUserId
+                        ) {
+                            isDeleting = true
+                            deleteError = ""
 
-                Text(
-                    text = formattedDate,
-                    fontSize = 12.sp,
-                    color = Color.Gray
-                )
+                            db.collection("posts")
+                                .document(post.id)
+                                .delete()
+                                .addOnSuccessListener {
+                                    postToDelete = null
+                                    isDeleting = false
+                                }
+                                .addOnFailureListener { exception ->
+                                    deleteError =
+                                        exception.localizedMessage
+                                            ?: "Failed to delete post."
+                                    isDeleting = false
+                                    postToDelete = null
+                                }
+                        }
+                    }
+                ) {
+                    Text(
+                        text = if (isDeleting) {
+                            "Deleting..."
+                        } else {
+                            "Delete"
+                        },
+                        color = Color.Red
+                    )
+                }
+            },
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = post.message,
-                    fontSize = 15.sp
-                )
+            dismissButton = {
+                TextButton(
+                    enabled = !isDeleting,
+                    onClick = {
+                        postToDelete = null
+                    }
+                ) {
+                    Text("Cancel")
+                }
             }
-        }
+        )
     }
 }
 
+
 @Composable
-fun SocialPostCard(post: SocialPost) {
+fun SocialPostCard(
+    post: SocialPost,
+    onDeleteClick: (() -> Unit)? = null,
+    showCommentsButton: Boolean = false
+) {
+
+    var commentsExpanded by remember(post.id) {
+        mutableStateOf(false)
+    }
 
     val sportLabel = when (post.sport) {
         "Basketball" -> "🏀 Basketball"
@@ -438,10 +514,12 @@ fun SocialPostCard(post: SocialPost) {
             containerColor = Color(0xFFF5F5F5)
         )
     ) {
+
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
 
+            // Username
             Text(
                 text = "@${post.username}",
                 fontSize = 16.sp,
@@ -450,12 +528,14 @@ fun SocialPostCard(post: SocialPost) {
 
             Spacer(modifier = Modifier.height(4.dp))
 
+            // Sport
             Text(
                 text = sportLabel,
                 fontSize = 13.sp,
                 color = Color(0xFF4A7000)
             )
 
+            // Timestamp
             Text(
                 text = formattedDate,
                 fontSize = 12.sp,
@@ -464,11 +544,301 @@ fun SocialPostCard(post: SocialPost) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Post message
             Text(
                 text = post.message,
                 fontSize = 15.sp
             )
+
+            // Buttons appear BELOW the post
+            if (showCommentsButton || onDeleteClick != null) {
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                HorizontalDivider()
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    if (showCommentsButton) {
+                        TextButton(
+                            onClick = {
+                                commentsExpanded = !commentsExpanded
+                            }
+                        ) {
+                            Text(
+                                text = if (commentsExpanded) {
+                                    "Hide Comments"
+                                } else {
+                                    "💬 Comments"
+                                },
+                                color = SocialGreen
+                            )
+                        }
+                    }
+
+                    if (onDeleteClick != null) {
+                        TextButton(
+                            onClick = onDeleteClick
+                        ) {
+                            Text(
+                                text = "Delete Post",
+                                color = Color.Red
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Expanded comments appear BELOW the buttons
+            if (showCommentsButton && commentsExpanded) {
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                CommentsSection(postId = post.id)
+            }
         }
     }
 }
+
+
+@Composable
+fun CommentsSection(postId: String) {
+
+    val auth = remember { FirebaseAuth.getInstance() }
+    val db = remember { FirebaseFirestore.getInstance() }
+
+    var comments by remember(postId) {
+        mutableStateOf<List<SocialComment>>(emptyList())
+    }
+
+    var commentText by remember(postId) {
+        mutableStateOf("")
+    }
+
+    var isSubmitting by remember {
+        mutableStateOf(false)
+    }
+
+    var commentError by remember {
+        mutableStateOf("")
+    }
+
+    var isLoading by remember {
+        mutableStateOf(true)
+    }
+
+    val commentsRef = remember(db, postId) {
+        db.collection("posts")
+            .document(postId)
+            .collection("comments")
+    }
+
+    // Listen for new and deleted comments.
+    DisposableEffect(commentsRef) {
+
+        val listener = commentsRef
+            .orderBy("createdAt", Query.Direction.ASCENDING)
+            .addSnapshotListener { snapshot, error ->
+
+                if (error != null) {
+                    commentError = error.localizedMessage
+                        ?: "Unable to load comments."
+                    isLoading = false
+                    return@addSnapshotListener
+                }
+
+                if (snapshot != null) {
+                    comments = snapshot.documents.map { document ->
+                        SocialComment(
+                            id = document.id,
+                            authorId = document.getString("authorId") ?: "",
+                            username = document.getString("username") ?: "Unknown",
+                            message = document.getString("message") ?: "",
+                            createdAt = document.getTimestamp("createdAt")
+                        )
+                    }
+
+                    isLoading = false
+                }
+            }
+
+        onDispose {
+            listener.remove()
+        }
+    }
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+
+        HorizontalDivider()
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(
+            text = "Comments",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if (isLoading) {
+            CircularProgressIndicator(
+                color = SocialGreen
+            )
+        } else if (comments.isEmpty()) {
+            Text(
+                text = "No comments yet.",
+                color = Color.Gray,
+                fontSize = 13.sp
+            )
+        }
+
+        comments.forEach { comment ->
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+
+                Text(
+                    text = "@${comment.username}",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+
+                Text(
+                    text = comment.message,
+                    fontSize = 14.sp
+                )
+
+                // Only the author sees Delete Comment.
+                if (comment.authorId == auth.currentUser?.uid) {
+
+                    TextButton(
+                        onClick = {
+                            commentsRef.document(comment.id)
+                                .delete()
+                                .addOnFailureListener { error ->
+                                    commentError =
+                                        error.localizedMessage
+                                            ?: "Unable to delete comment."
+                                }
+                        }
+                    ) {
+                        Text(
+                            text = "Delete Comment",
+                            color = Color.Red,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+
+            HorizontalDivider()
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = commentText,
+            onValueChange = {
+                if (it.length <= 300) {
+                    commentText = it
+                }
+            },
+            label = {
+                Text("Write a comment")
+            },
+            modifier = Modifier.fillMaxWidth(),
+            maxLines = 3
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Button(
+            onClick = {
+
+                val user = auth.currentUser
+                val message = commentText.trim()
+
+                commentError = ""
+
+                if (user == null) {
+                    commentError = "Please log in to comment."
+                } else if (message.isNotBlank()) {
+
+                    isSubmitting = true
+
+                    db.collection("users")
+                        .document(user.uid)
+                        .get()
+                        .addOnSuccessListener { document ->
+
+                            val username =
+                                document.getString("username")
+
+                            if (username.isNullOrBlank()) {
+                                commentError = "Username not found."
+                                isSubmitting = false
+                            } else {
+
+                                val comment = hashMapOf(
+                                    "authorId" to user.uid,
+                                    "username" to username,
+                                    "message" to message,
+                                    "createdAt" to FieldValue.serverTimestamp()
+                                )
+
+                                commentsRef.add(comment)
+                                    .addOnSuccessListener {
+                                        commentText = ""
+                                        isSubmitting = false
+                                    }
+                                    .addOnFailureListener { error ->
+                                        commentError =
+                                            error.localizedMessage
+                                                ?: "Unable to add comment."
+                                        isSubmitting = false
+                                    }
+                            }
+                        }
+                        .addOnFailureListener { error ->
+                            commentError =
+                                error.localizedMessage
+                                    ?: "Unable to load your profile."
+                            isSubmitting = false
+                        }
+                }
+            },
+            enabled = commentText.isNotBlank() && !isSubmitting,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = SocialGreen
+            )
+        ) {
+            Text(
+                if (isSubmitting) "Posting..." else "Comment"
+            )
+        }
+
+        if (commentError.isNotEmpty()) {
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = commentError,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 13.sp
+            )
+        }
+    }
+}
+
 
