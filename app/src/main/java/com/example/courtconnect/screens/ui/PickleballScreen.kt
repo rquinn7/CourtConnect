@@ -337,10 +337,7 @@ fun PickleBallScreen(
 
                     PickleballCourtCard(
                         court = court,
-                        distanceMiles = distance,
-                        onCheckInClick = {
-                            // Firebase later
-                        }
+                        distanceMiles = distance
                     )
                 }
             }
@@ -355,8 +352,7 @@ fun PickleBallScreen(
 @Composable
 fun PickleballCourtCard(
     court: Place,
-    distanceMiles: Float?,
-    onCheckInClick: () -> Unit
+    distanceMiles: Float?
 ) {
     Card(
         modifier = Modifier
@@ -421,29 +417,14 @@ fun PickleballCourtCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // New row which holds the check in button, in order to track how many
-            // people are at each court
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                Text(
-                    text = "👥 0 players here",
-                    fontSize = 14.sp,
-                    color = Color.Gray
-                )
-
-                Button(
-                    onClick = onCheckInClick,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFF5722)
-                    )
-                ) {
-                    Text("Check In")
-                }
-            }
+            // Display live player counts and check-in/check-out controls.
+            court.id?.let { placeId ->
+                CourtCheckInSection(courtId = placeId)
+            } ?: Text(
+                text = "Check-in unavailable for this court",
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
         }
     }
 }

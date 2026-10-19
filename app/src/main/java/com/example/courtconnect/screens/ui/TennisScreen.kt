@@ -335,10 +335,7 @@ fun TennisScreen(
 
                     TennisCourtCard(
                         court = court,
-                        distanceMiles = distance,
-                        onCheckInClick = {
-                            // Firebase later
-                        }
+                        distanceMiles = distance
                     )
                 }
             }
@@ -353,8 +350,7 @@ fun TennisScreen(
 @Composable
 fun TennisCourtCard(
     court: Place,
-    distanceMiles: Float?,
-    onCheckInClick: () -> Unit
+    distanceMiles: Float?
 ) {
     Card(
         modifier = Modifier
@@ -419,29 +415,13 @@ fun TennisCourtCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // New row which holds the check in button, in order to track how many
-            // people are at each court
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                Text(
-                    text = "👥 0 players here",
-                    fontSize = 14.sp,
-                    color = Color.Gray
-                )
-
-                Button(
-                    onClick = onCheckInClick,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFFF5722)
-                    )
-                ) {
-                    Text("Check In")
-                }
-            }
+            court.id?.let { placeId ->
+                CourtCheckInSection(courtId = placeId)
+            } ?: Text(
+                text = "Check-in unavailable for this court",
+                fontSize = 14.sp,
+                color = Color.Gray
+            )
         }
     }
 }
