@@ -1,7 +1,5 @@
-
 package com.example.courtconnect.screens.ui
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -21,23 +19,33 @@ import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
-private val CourtConnectGreen = Color(0xFF5B9808)
 
 @Composable
 fun UserAccountScreen(
     onBackClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
+    // since pulling information from firebase need to link to firebase/firestore db
     val auth = remember { FirebaseAuth.getInstance() }
     val db = remember { FirebaseFirestore.getInstance() }
 
+    // information which is pulled from the user accounts
     var firstName by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
+    // boolean used to tell if the user information data is loading or not
     var isLoading by remember { mutableStateOf(true) }
+    // holds if there is an error when pulling the data from firebase
     var errorMessage by remember { mutableStateOf("") }
 
+
+    // https://firebase.google.com/docs/firestore/query-data/get-data
+    // https://developer.android.com/develop/ui/compose/side-effects
+    // https://firebase.google.com/docs/firestore/query-data/get-data
+    // used code above in combination with AI in order to pull information from firebase
+    // and then be able to then display it to the user
+    // the launched effect means it opens when the user clicks the button to enter this screen
     LaunchedEffect(auth.currentUser?.uid) {
         val user = auth.currentUser
 
@@ -75,12 +83,12 @@ fun UserAccountScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // Top navigation
         Row(
             modifier = Modifier.fillMaxWidth()
                 .padding(top = 24.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // button user to go back to home screen
             IconButton(
                 onClick = onBackClick,
                 modifier = Modifier
@@ -105,7 +113,7 @@ fun UserAccountScreen(
         Spacer(modifier = Modifier.height(32.dp))
 
         if (isLoading) {
-            CircularProgressIndicator(color = CourtConnectGreen)
+            CircularProgressIndicator(color = Color(0xFF5B9808))
         } else if (errorMessage.isNotEmpty()) {
             Text(
                 text = errorMessage,
@@ -114,12 +122,11 @@ fun UserAccountScreen(
             )
         } else {
 
-            // Profile icon
             Box(
                 modifier = Modifier
                     .size(110.dp)
                     .background(
-                        CourtConnectGreen.copy(alpha = 0.15f),
+                        Color(0xFF5B9808).copy(alpha = 0.15f),
                         CircleShape
                     ),
                 contentAlignment = Alignment.Center
@@ -127,14 +134,13 @@ fun UserAccountScreen(
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Profile",
-                    tint = CourtConnectGreen,
+                    tint = Color(0xFF5B9808),
                     modifier = Modifier.size(65.dp)
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Username
             Text(
                 text = if (username.isNotBlank()) {
                     "@$username"
@@ -156,7 +162,6 @@ fun UserAccountScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Account information
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
@@ -198,7 +203,7 @@ fun UserAccountScreen(
                     .height(52.dp),
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = CourtConnectGreen
+                    containerColor = Color(0xFF5B9808)
                 )
             ) {
                 Text(
@@ -210,6 +215,8 @@ fun UserAccountScreen(
     }
 }
 
+// create a function which is used to hold all the profile information in one row
+// this makes it much more clear for the user
 @Composable
 private fun ProfileInfoRow(
     label: String,
