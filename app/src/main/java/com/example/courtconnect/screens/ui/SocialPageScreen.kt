@@ -206,7 +206,12 @@ fun SocialPageScreen(
                         },
                         minLines = 3,
                         maxLines = 6,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = Color(0xFFFF5722),
+                            unfocusedBorderColor = Color.Gray,
+                            cursorColor = Color(0xFF5B9808)
+                        )
                     )
 
                     Spacer(modifier = Modifier.height(12.dp))
@@ -234,27 +239,44 @@ fun SocialPageScreen(
                                 .fillMaxWidth()
                                 .menuAnchor(
                                     ExposedDropdownMenuAnchorType.PrimaryNotEditable
-                                )
+                                ),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFFFF5722),
+                                unfocusedBorderColor = Color.Gray,
+                                focusedLabelColor = Color(0xFFFF5722)
+                            )
                         )
 
-                        // the dropdown menu which is being expanded
                         ExposedDropdownMenu(
                             expanded = sportMenuExpanded,
                             onDismissRequest = {
                                 sportMenuExpanded = false
-                            }
+                            },
+                            containerColor = Color(0xFFFFF0EB),
+                            shape = RoundedCornerShape(12.dp),
+                            shadowElevation = 4.dp
                         ) {
-                            listOf(
-                                "Basketball",
-                                "Tennis",
-                                "Pickleball"
-                            ).forEach { sport ->
+                            listOf("Basketball", "Tennis", "Pickleball").forEach { sport ->
+
                                 DropdownMenuItem(
-                                    text = { Text(sport) },
+                                    text = {
+                                        Text(
+                                            text = sport,
+                                            color = Color.Black
+                                        )
+                                    },
                                     onClick = {
                                         selectedSport = sport
                                         sportMenuExpanded = false
-                                    }
+                                    },
+                                    modifier = Modifier
+                                        .background(
+                                            if (selectedSport == sport) {
+                                                Color(0xFFFFD5C9)
+                                            } else {
+                                                Color.Transparent
+                                            }
+                                        )
                                 )
                             }
                         }
@@ -818,7 +840,15 @@ fun CommentsSection(postId: String) {
                 Text("Write a comment")
             },
             modifier = Modifier.fillMaxWidth(),
-            maxLines = 3
+            maxLines = 3,
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color(0xFF5B9808),
+                unfocusedBorderColor = Color.Gray,
+                focusedLabelColor = Color(0xFF5B9808),
+                unfocusedLabelColor = Color.Gray,
+                cursorColor = Color(0xFF5B9808)
+            )
         )
 
         Spacer(modifier = Modifier.height(8.dp))

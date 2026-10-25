@@ -120,6 +120,7 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
+                    // Below is all navigation between the different sports pages
                     composable("basketball") {
                         BasketballScreen(
                             onHomeClick = {
@@ -195,6 +196,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+                    // social page screen navigation
                     composable("socialPage") {
                         SocialPageScreen(
                             onHomeClick = {

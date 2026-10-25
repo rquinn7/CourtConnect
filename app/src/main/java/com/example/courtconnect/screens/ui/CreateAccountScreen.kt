@@ -142,7 +142,8 @@ fun CreateAccountScreen(
             shape = RoundedCornerShape(25.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF5B9808),
-                focusedLabelColor = Color(0xFF5B9808)
+                focusedLabelColor = Color(0xFF5B9808),
+                cursorColor = Color(0xFF5B9808)
             )
         )
 
@@ -155,7 +156,8 @@ fun CreateAccountScreen(
             shape = RoundedCornerShape(25.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF5B9808),
-                focusedLabelColor = Color(0xFF5B9808)
+                focusedLabelColor = Color(0xFF5B9808),
+                cursorColor = Color(0xFF5B9808)
             )
         )
 
@@ -168,7 +170,8 @@ fun CreateAccountScreen(
             shape = RoundedCornerShape(25.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF5B9808),
-                focusedLabelColor = Color(0xFF5B9808)
+                focusedLabelColor = Color(0xFF5B9808),
+                cursorColor = Color(0xFF5B9808)
             ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email
@@ -185,7 +188,8 @@ fun CreateAccountScreen(
             shape = RoundedCornerShape(25.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF5B9808),
-                focusedLabelColor = Color(0xFF5B9808)
+                focusedLabelColor = Color(0xFF5B9808),
+                cursorColor = Color(0xFF5B9808)
             ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Text
@@ -221,7 +225,8 @@ fun CreateAccountScreen(
             shape = RoundedCornerShape(25.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF5B9808),
-                focusedLabelColor = Color(0xFF5B9808)
+                focusedLabelColor = Color(0xFF5B9808),
+                cursorColor = Color(0xFF5B9808)
             ),
             visualTransformation = if (passwordVisible) {
                 VisualTransformation.None
@@ -254,7 +259,8 @@ fun CreateAccountScreen(
             shape = RoundedCornerShape(25.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF5B9808),
-                focusedLabelColor = Color(0xFF5B9808)
+                focusedLabelColor = Color(0xFF5B9808),
+                cursorColor = Color(0xFF5B9808)
             ),
             visualTransformation = if (passwordVisible) {
                 VisualTransformation.None

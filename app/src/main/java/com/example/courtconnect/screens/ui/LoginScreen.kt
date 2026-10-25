@@ -88,7 +88,8 @@ fun LoginScreen(
                 label = { Text("Email") },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF5B9808),
-                    focusedLabelColor = Color(0xFF5B9808)
+                    focusedLabelColor = Color(0xFF5B9808),
+                    cursorColor = Color(0xFF5B9808)
                 ),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Email
@@ -103,7 +104,8 @@ fun LoginScreen(
                 label = { Text("Password") },
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Color(0xFF5B9808),
-                    focusedLabelColor = Color(0xFF5B9808)
+                    focusedLabelColor = Color(0xFF5B9808),
+                    cursorColor = Color(0xFF5B9808)
                 ),
                 visualTransformation = if (passwordVisible) {
                     VisualTransformation.None

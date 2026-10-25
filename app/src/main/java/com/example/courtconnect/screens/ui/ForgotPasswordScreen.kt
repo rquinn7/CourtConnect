@@ -110,7 +110,8 @@ fun ForgotPasswordScreen(
             shape = RoundedCornerShape(25.dp),
             colors = OutlinedTextFieldDefaults.colors(
                 focusedBorderColor = Color(0xFF5B9808),
-                focusedLabelColor = Color(0xFF5B9808)
+                focusedLabelColor = Color(0xFF5B9808),
+                cursorColor = Color(0xFF5B9808)
             ),
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email
