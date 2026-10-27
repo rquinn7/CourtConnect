@@ -56,25 +56,31 @@ fun HomeScreenWithFirebase(
     onProfileClick: () -> Unit,
     onConnectClick: () -> Unit
 ) {
-
+    // holds the first name at top of screen
     var firstName by remember { mutableStateOf("") }
 
+    // firebase database and authentication in order to pull the name of the user
     val auth = FirebaseAuth.getInstance()
     val db = FirebaseFirestore.getInstance()
 
+    // list used when pulling in the recent posts to be shown on the homescreen
     var recentPosts by remember {
         mutableStateOf<List<SocialPost>>(emptyList())
     }
 
+    // boolean used to know if the recent posts are loading
     var isLoadingRecentPosts by remember {
         mutableStateOf(true)
     }
 
+    // used to hold the recent posts error
     var recentPostsError by remember {
         mutableStateOf("")
     }
 
 
+    // create disposable effect which is used to pull the recent posts
+    // this will also notify if there was an error when gathering the posts from firestore
     DisposableEffect(db) {
 
         val listener = db.collection("posts")
@@ -112,6 +118,7 @@ fun HomeScreenWithFirebase(
     }
 
 
+    // launched effect which is used to get the current user when the app is opened to the home page
     LaunchedEffect(Unit) {
 
         val user = auth.currentUser

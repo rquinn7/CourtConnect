@@ -20,40 +20,47 @@ import com.google.firebase.Timestamp
 import kotlinx.coroutines.delay
 import java.util.Date
 
-private const val TWO_HOURS_MS = 2L * 60 * 60 * 1000
-
 @Composable
 fun CourtCheckInSection(courtId: String) {
 
+    // used for firebase authorization to make sure account is in firebase
+    // also the db is used to access the firestore database which holds all users,
+    // accounts, posts, etc...
     val auth = remember { FirebaseAuth.getInstance() }
     val db = remember { FirebaseFirestore.getInstance() }
 
+    // used to hold the current user's id
     val userId = auth.currentUser?.uid
 
+
+    // used to point to the current player and court in the firestore database
     val playersRef = remember(db, courtId) {
         db.collection("courtCheckIns")
             .document(courtId)
             .collection("players")
     }
 
+    // used to hold the check-ins from firestore
     var checkIns by remember(courtId) {
         mutableStateOf<Map<String, Timestamp>>(emptyMap())
     }
 
+    // used to hold the current time, which is used for checking people out automatically
     var currentTime by remember {
         mutableLongStateOf(System.currentTimeMillis())
     }
 
+    // boolean used to hold whether the check in is saving or not
     var isSaving by remember(courtId) {
         mutableStateOf(false)
     }
 
+    // error message for displaying when checking into a court
     var errorMessage by remember(courtId) {
         mutableStateOf("")
     }
 
-    // Update the current time every minute.
-    // This allows expired check-ins to stop counting.
+    // Update the current time every minute in order to accurately track check-ins and outs
     LaunchedEffect(courtId) {
         while (true) {
             currentTime = System.currentTimeMillis()
@@ -61,7 +68,7 @@ fun CourtCheckInSection(courtId: String) {
         }
     }
 
-    // Listen for check-in changes in Firebase.
+    // used to check for if a player has checked in to a court and then display it on the page
     DisposableEffect(playersRef) {
 
         val listener = playersRef
@@ -96,14 +103,15 @@ fun CourtCheckInSection(courtId: String) {
         }
     }
 
-    // Exclude check-ins that have expired.
+    // used to hold active check-in totals
     val activeCheckIns = checkIns.filterValues { expiresAt ->
         expiresAt.toDate().time > currentTime
     }
 
+    // used to hold the amount of players at a given court
     val playerCount = activeCheckIns.size
 
-    // Check whether the current user is checked in.
+    // as long as the user has an ID and is checked in set this value
     val isCheckedIn = userId != null &&
             activeCheckIns.containsKey(userId)
 
@@ -134,7 +142,7 @@ fun CourtCheckInSection(courtId: String) {
 
                         if (isCheckedIn) {
 
-                            // Remove the user's check-in.
+                            // Remove the user's check-in when deleted
                             userCheckIn.delete()
                                 .addOnSuccessListener {
                                     isSaving = false
@@ -148,14 +156,16 @@ fun CourtCheckInSection(courtId: String) {
 
                         } else {
 
-                            // Check-in expires after two hours.
+                            // remove player's check-ins after 2 hours
                             val expiresAt = Timestamp(
                                 Date(
                                     System.currentTimeMillis() +
-                                            TWO_HOURS_MS
+                                            2L * 60 * 60 * 1000
                                 )
                             )
 
+                            // holds the data for each check-in, holds the ID, and what time
+                            // they checked-in and when it expires
                             val data = hashMapOf(
                                 "userId" to userId,
                                 "checkedInAt" to
@@ -163,7 +173,7 @@ fun CourtCheckInSection(courtId: String) {
                                 "expiresAt" to expiresAt
                             )
 
-                            // Save or replace the user's check-in.
+                            // sets the current check-in based on the information from above
                             userCheckIn.set(data)
                                 .addOnSuccessListener {
                                     isSaving = false
