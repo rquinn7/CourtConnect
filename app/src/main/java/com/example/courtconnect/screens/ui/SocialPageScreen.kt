@@ -20,6 +20,16 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import java.text.SimpleDateFormat
 import java.util.Locale
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import androidx.core.content.ContextCompat
+import androidx.compose.ui.platform.LocalContext
+import com.google.android.gms.location.LocationServices
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.CircularBounds
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.SearchByTextRequest
 
 // https://medium.com/@manishkumar_75473/deep-dive-into-kotlin-data-classes-for-android-engineers-f31dfd39a18b
 // used similarly to how they are used in Python where you can use this to create
@@ -30,7 +40,9 @@ data class SocialPost(
     val username: String,
     val sport: String,
     val message: String,
-    val createdAt: Timestamp?
+    val createdAt: Timestamp?,
+    val courtId: String? = null,
+    val courtName: String? = null
 )
 
 data class SocialComment(
@@ -59,6 +71,46 @@ fun SocialPageScreen(
     var selectedSport by remember { mutableStateOf("Basketball") }
     // boolean used to hold whether the given sport menu is expanded or not
     var sportMenuExpanded by remember { mutableStateOf(false) }
+
+    // Whether the user wants to create a post about a specific court
+    var chooseCourt by remember { mutableStateOf(false) }
+
+    // List of nearby courts for the selected sport
+    var nearbyCourts by remember {
+        mutableStateOf<List<Place>>(emptyList())
+    }
+
+    // The court selected by the user
+    var selectedCourt by remember {
+        mutableStateOf<Place?>(null)
+    }
+
+    // Controls whether the court dropdown is open
+    var courtMenuExpanded by remember {
+        mutableStateOf(false)
+    }
+
+    // Tracks whether nearby courts are loading
+    var isLoadingCourts by remember {
+        mutableStateOf(false)
+    }
+
+    // Holds any errors when searching for nearby courts
+    var courtError by remember {
+        mutableStateOf("")
+    }
+
+    val context = LocalContext.current
+
+    val fusedLocationClient = remember {
+        LocationServices.getFusedLocationProviderClient(context)
+    }
+
+    val placesClient = remember {
+        Places.createClient(context)
+    }
+
+
 
     // boolean used to hold the value whether the post is in process of posting or not
     var isPosting by remember { mutableStateOf(false) }
@@ -95,6 +147,95 @@ fun SocialPageScreen(
         mutableStateOf("")
     }
 
+    @SuppressLint("MissingPermission")
+    LaunchedEffect(chooseCourt, selectedSport) {
+
+        nearbyCourts = emptyList()
+        selectedCourt = null
+        courtError = ""
+        courtMenuExpanded = false
+
+        if (chooseCourt) {
+
+            val hasFinePermission = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+
+            val hasCoarsePermission = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!hasFinePermission && !hasCoarsePermission) {
+                courtError = "Location permission is required to find nearby courts."
+            } else {
+
+                isLoadingCourts = true
+
+                fusedLocationClient.lastLocation
+                    .addOnSuccessListener { location ->
+
+                        if (location == null) {
+                            courtError = "Unable to determine your location."
+                            isLoadingCourts = false
+                        } else {
+
+                            val currentLocation =
+                                com.google.android.gms.maps.model.LatLng(
+                                    location.latitude,
+                                    location.longitude
+                                )
+
+                            val searchTerm = when (selectedSport) {
+                                "Basketball" -> "basketball court"
+                                "Tennis" -> "tennis court"
+                                "Pickleball" -> "pickleball court"
+                                else -> ""
+                            }
+
+                            val placeFields = listOf(
+                                Place.Field.ID,
+                                Place.Field.DISPLAY_NAME,
+                                Place.Field.LOCATION
+                            )
+
+                            val searchArea = CircularBounds.newInstance(
+                                currentLocation,
+                                16000.0
+                            )
+
+                            val request = SearchByTextRequest.builder(
+                                searchTerm,
+                                placeFields
+                            )
+                                .setLocationBias(searchArea)
+                                .setMaxResultCount(20)
+                                .build()
+
+                            placesClient.searchByText(request)
+                                .addOnSuccessListener { response ->
+                                    nearbyCourts = response.places
+                                    isLoadingCourts = false
+                                }
+                                .addOnFailureListener { error ->
+                                    courtError = error.localizedMessage
+                                        ?: "Unable to find nearby courts."
+                                    isLoadingCourts = false
+                                }
+                        }
+                    }
+                    .addOnFailureListener { error ->
+                        courtError = error.localizedMessage
+                            ?: "Unable to get your location."
+                        isLoadingCourts = false
+                    }
+            }
+        } else {
+            isLoadingCourts = false
+        }
+    }
+
     // https://kotlinlang.org/docs/collection-transformations.html
     // https://firebase.google.com/docs/firestore/query-data/order-limit-data
     // https://firebase.google.com/docs/firestore/query-data/listen
@@ -122,7 +263,9 @@ fun SocialPageScreen(
                             username = document.getString("username") ?: "Unknown",
                             sport = document.getString("sport") ?: "",
                             message = document.getString("message") ?: "",
-                            createdAt = document.getTimestamp("createdAt")
+                            createdAt = document.getTimestamp("createdAt"),
+                            courtId = document.getString("courtId"),
+                            courtName = document.getString("courtName")
                         )
                     }
 
@@ -284,6 +427,104 @@ fun SocialPageScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = chooseCourt,
+                            onCheckedChange = { chooseCourt = it },
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = Color(0xFF5B9808)
+                            )
+                        )
+
+                        Text("Choose a specific court")
+                    }
+
+                    if (chooseCourt) {
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        if (isLoadingCourts) {
+                            CircularProgressIndicator(
+                                color = Color(0xFF5B9808)
+                            )
+                        }
+
+                        if (courtError.isNotEmpty()) {
+                            Text(
+                                text = courtError,
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 14.sp
+                            )
+                        }
+
+                        if (!isLoadingCourts && courtError.isEmpty()) {
+
+                            if (nearbyCourts.isEmpty()) {
+                                Text(
+                                    text = "No nearby courts found.",
+                                    color = Color.Gray
+                                )
+                            } else {
+
+                                ExposedDropdownMenuBox(
+                                    expanded = courtMenuExpanded,
+                                    onExpandedChange = {
+                                        courtMenuExpanded = it
+                                    }
+                                ) {
+
+                                    OutlinedTextField(
+                                        value = selectedCourt?.displayName ?: "",
+                                        onValueChange = {},
+                                        readOnly = true,
+                                        label = { Text("Nearby Court") },
+                                        placeholder = { Text("Select a court") },
+                                        trailingIcon = {
+                                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                                expanded = courtMenuExpanded
+                                            )
+                                        },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .menuAnchor(
+                                                ExposedDropdownMenuAnchorType.PrimaryNotEditable
+                                            ),
+                                        colors = OutlinedTextFieldDefaults.colors(
+                                            focusedBorderColor = Color(0xFFFF5722),
+                                            unfocusedBorderColor = Color.Gray,
+                                            focusedLabelColor = Color(0xFFFF5722)
+                                        )
+                                    )
+
+                                    ExposedDropdownMenu(
+                                        expanded = courtMenuExpanded,
+                                        onDismissRequest = {
+                                            courtMenuExpanded = false
+                                        },
+                                        containerColor = Color(0xFFFFF0EB)
+                                    ) {
+
+                                        nearbyCourts.forEach { court ->
+
+                                            DropdownMenuItem(
+                                                text = {
+                                                    Text(
+                                                        court.displayName ?: "Unknown Court"
+                                                    )
+                                                },
+                                                onClick = {
+                                                    selectedCourt = court
+                                                    courtMenuExpanded = false
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
 
                     Button(
                         onClick = {
@@ -304,6 +545,8 @@ fun SocialPageScreen(
                                 // if no message on the post send this error
                             } else if (message.isBlank()) {
                                 postError = "Please enter a message."
+                            } else if (chooseCourt && selectedCourt?.id == null) {
+                                postError = "Please select a nearby court."
                             } else {
                                 isPosting = true
 
@@ -327,6 +570,12 @@ fun SocialPageScreen(
                                                 "message" to message,
                                                 "createdAt" to FieldValue.serverTimestamp()
                                             )
+                                            if (chooseCourt) {
+                                                selectedCourt?.let { court ->
+                                                    post["courtId"] = court.id ?: ""
+                                                    post["courtName"] = court.displayName ?: "Unknown Court"
+                                                }
+                                            }
 
                                             // create the new post in firebase
                                             db.collection("posts")
@@ -335,6 +584,9 @@ fun SocialPageScreen(
                                                     postMessage = ""
                                                     postSuccess = "Your post was published!"
                                                     isPosting = false
+                                                    chooseCourt = false
+                                                    selectedCourt = null
+                                                    nearbyCourts = emptyList()
                                                 }
                                                 .addOnFailureListener { exception ->
                                                     postError =
@@ -606,6 +858,17 @@ fun SocialPostCard(
                 fontSize = 13.sp,
                 color = Color(0xFF4A7000)
             )
+
+            if (!post.courtName.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = "📍 ${post.courtName}",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF5B9808)
+                )
+            }
 
             Text(
                 text = formattedDate,
