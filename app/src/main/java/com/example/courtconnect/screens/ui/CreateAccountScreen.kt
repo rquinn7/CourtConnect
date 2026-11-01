@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -79,7 +78,7 @@ fun CreateAccountScreen(
     )
 
     var registrationError by remember { mutableStateOf("") }
-    var isRegistering by remember { mutableStateOf(false) }
+    var registrationStatus by remember { mutableStateOf(false) }
 
     // variables used for firebase
     // used to authorize account and access to firebase
@@ -343,7 +342,7 @@ fun CreateAccountScreen(
 
                     // Create the Firebase Authentication account
 
-                    isRegistering = true
+                    registrationStatus = true
                     registrationError = ""
 
                     auth.createUserWithEmailAndPassword(
@@ -394,7 +393,7 @@ fun CreateAccountScreen(
 
                                 }.addOnSuccessListener {
 
-                                    isRegistering = false
+                                    registrationStatus = false
                                     onLoginClick()
 
                                 }.addOnFailureListener { exception ->
@@ -411,7 +410,7 @@ fun CreateAccountScreen(
                                     // Remove the newly created Auth account
                                     // because its Firestore profile was not saved.
                                     user.delete().addOnCompleteListener { deleteTask ->
-                                        isRegistering = false
+                                        registrationStatus = false
 
                                         if (!deleteTask.isSuccessful) {
                                             registrationError =
@@ -421,12 +420,12 @@ fun CreateAccountScreen(
                                 }
 
                             } else {
-                                isRegistering = false
+                                registrationStatus = false
                                 registrationError = "Unable to retrieve Firebase user."
                             }
 
                         } else {
-                            isRegistering = false
+                            registrationStatus = false
                             registrationError =
                                 task.exception?.localizedMessage
                                     ?: "Unable to create account."
@@ -443,7 +442,7 @@ fun CreateAccountScreen(
                     && lastName.isNotBlank()
                     && username.isNotBlank()
                     && passwordConfirmed.isNotBlank()
-                    && !isRegistering,
+                    && !registrationStatus,
 
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF5B9808)
@@ -455,7 +454,7 @@ fun CreateAccountScreen(
 
         ) {
             Text(
-                if (isRegistering) "Creating Account..."
+                if (registrationStatus) "Creating Account..."
                 else "Create Account"
             )
         }

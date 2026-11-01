@@ -70,10 +70,10 @@ fun SocialPageScreen(
     // used to hold the value for the selected sport which is displayed in the post
     var selectedSport by remember { mutableStateOf("Basketball") }
     // boolean used to hold whether the given sport menu is expanded or not
-    var sportMenuExpanded by remember { mutableStateOf(false) }
+    var expandedSportsMenu by remember { mutableStateOf(false) }
 
     // Whether the user wants to create a post about a specific court
-    var chooseCourt by remember { mutableStateOf(false) }
+    var courtPostBoolean by remember { mutableStateOf(false) }
 
     // List of nearby courts for the selected sport
     var nearbyCourts by remember {
@@ -86,12 +86,12 @@ fun SocialPageScreen(
     }
 
     // Controls whether the court dropdown is open
-    var courtMenuExpanded by remember {
+    var courtMenuStatus by remember {
         mutableStateOf(false)
     }
 
     // Tracks whether nearby courts are loading
-    var isLoadingCourts by remember {
+    var courtLoadingStatus by remember {
         mutableStateOf(false)
     }
 
@@ -113,7 +113,7 @@ fun SocialPageScreen(
 
 
     // boolean used to hold the value whether the post is in process of posting or not
-    var isPosting by remember { mutableStateOf(false) }
+    var postingStatus by remember { mutableStateOf(false) }
     // holds the value of the postError, if there was an error when posting the given post
     var postError by remember { mutableStateOf("") }
     // used to display to the user that the post was successfully posted
@@ -128,7 +128,7 @@ fun SocialPageScreen(
     // list which holds the posts
     var posts by remember { mutableStateOf<List<SocialPost>>(emptyList()) }
     // boolean which displays whether post are loading or not
-    var isLoadingPosts by remember { mutableStateOf(true) }
+    var loadingPostsStatus by remember { mutableStateOf(true) }
     // value used to display errors in the feed
     var feedError by remember { mutableStateOf("") }
 
@@ -148,14 +148,14 @@ fun SocialPageScreen(
     }
 
     @SuppressLint("MissingPermission")
-    LaunchedEffect(chooseCourt, selectedSport) {
+    LaunchedEffect(courtPostBoolean, selectedSport) {
 
         nearbyCourts = emptyList()
         selectedCourt = null
         courtError = ""
-        courtMenuExpanded = false
+        courtMenuStatus = false
 
-        if (chooseCourt) {
+        if (courtPostBoolean) {
 
             val hasFinePermission = ContextCompat.checkSelfPermission(
                 context,
@@ -171,14 +171,14 @@ fun SocialPageScreen(
                 courtError = "Location permission is required to find nearby courts."
             } else {
 
-                isLoadingCourts = true
+                courtLoadingStatus = true
 
                 fusedLocationClient.lastLocation
                     .addOnSuccessListener { location ->
 
                         if (location == null) {
                             courtError = "Unable to determine your location."
-                            isLoadingCourts = false
+                            courtLoadingStatus = false
                         } else {
 
                             val currentLocation =
@@ -216,23 +216,23 @@ fun SocialPageScreen(
                             placesClient.searchByText(request)
                                 .addOnSuccessListener { response ->
                                     nearbyCourts = response.places
-                                    isLoadingCourts = false
+                                    courtLoadingStatus = false
                                 }
                                 .addOnFailureListener { error ->
                                     courtError = error.localizedMessage
                                         ?: "Unable to find nearby courts."
-                                    isLoadingCourts = false
+                                    courtLoadingStatus = false
                                 }
                         }
                     }
                     .addOnFailureListener { error ->
                         courtError = error.localizedMessage
                             ?: "Unable to get your location."
-                        isLoadingCourts = false
+                        courtLoadingStatus = false
                     }
             }
         } else {
-            isLoadingCourts = false
+            courtLoadingStatus = false
         }
     }
 
@@ -251,7 +251,7 @@ fun SocialPageScreen(
                 if (error != null) {
                     feedError = error.localizedMessage
                         ?: "Failed to load community posts."
-                    isLoadingPosts = false
+                    loadingPostsStatus = false
                     return@addSnapshotListener
                 }
 
@@ -270,7 +270,7 @@ fun SocialPageScreen(
                     }
 
                     feedError = ""
-                    isLoadingPosts = false
+                    loadingPostsStatus = false
                 }
             }
 
@@ -362,9 +362,9 @@ fun SocialPageScreen(
                     // https://developer.android.com/reference/kotlin/androidx/compose/material/ExposedDropdownMenuBoxScope
                     // used to ask the user which sport they would like to make the post for
                     ExposedDropdownMenuBox(
-                        expanded = sportMenuExpanded,
+                        expanded = expandedSportsMenu,
                         onExpandedChange = {
-                            sportMenuExpanded = it
+                            expandedSportsMenu = it
                         }
                     ) {
                         // text field which will be filled in with the selected sport
@@ -375,7 +375,7 @@ fun SocialPageScreen(
                             label = { Text("Sport") },
                             trailingIcon = {
                                 ExposedDropdownMenuDefaults.TrailingIcon(
-                                    expanded = sportMenuExpanded
+                                    expanded = expandedSportsMenu
                                 )
                             },
                             modifier = Modifier
@@ -391,9 +391,9 @@ fun SocialPageScreen(
                         )
 
                         ExposedDropdownMenu(
-                            expanded = sportMenuExpanded,
+                            expanded = expandedSportsMenu,
                             onDismissRequest = {
-                                sportMenuExpanded = false
+                                expandedSportsMenu = false
                             },
                             containerColor = Color(0xFFFFF0EB),
                             shape = RoundedCornerShape(12.dp),
@@ -410,7 +410,7 @@ fun SocialPageScreen(
                                     },
                                     onClick = {
                                         selectedSport = sport
-                                        sportMenuExpanded = false
+                                        expandedSportsMenu = false
                                     },
                                     modifier = Modifier
                                         .background(
@@ -431,8 +431,8 @@ fun SocialPageScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Checkbox(
-                            checked = chooseCourt,
-                            onCheckedChange = { chooseCourt = it },
+                            checked = courtPostBoolean,
+                            onCheckedChange = { courtPostBoolean = it },
                             colors = CheckboxDefaults.colors(
                                 checkedColor = Color(0xFF5B9808)
                             )
@@ -441,11 +441,11 @@ fun SocialPageScreen(
                         Text("Choose a specific court")
                     }
 
-                    if (chooseCourt) {
+                    if (courtPostBoolean) {
 
                         Spacer(modifier = Modifier.height(8.dp))
 
-                        if (isLoadingCourts) {
+                        if (courtLoadingStatus) {
                             CircularProgressIndicator(
                                 color = Color(0xFF5B9808)
                             )
@@ -459,7 +459,7 @@ fun SocialPageScreen(
                             )
                         }
 
-                        if (!isLoadingCourts && courtError.isEmpty()) {
+                        if (!courtLoadingStatus && courtError.isEmpty()) {
 
                             if (nearbyCourts.isEmpty()) {
                                 Text(
@@ -469,9 +469,9 @@ fun SocialPageScreen(
                             } else {
 
                                 ExposedDropdownMenuBox(
-                                    expanded = courtMenuExpanded,
+                                    expanded = courtMenuStatus,
                                     onExpandedChange = {
-                                        courtMenuExpanded = it
+                                        courtMenuStatus = it
                                     }
                                 ) {
 
@@ -483,7 +483,7 @@ fun SocialPageScreen(
                                         placeholder = { Text("Select a court") },
                                         trailingIcon = {
                                             ExposedDropdownMenuDefaults.TrailingIcon(
-                                                expanded = courtMenuExpanded
+                                                expanded = courtMenuStatus
                                             )
                                         },
                                         modifier = Modifier
@@ -499,9 +499,9 @@ fun SocialPageScreen(
                                     )
 
                                     ExposedDropdownMenu(
-                                        expanded = courtMenuExpanded,
+                                        expanded = courtMenuStatus,
                                         onDismissRequest = {
-                                            courtMenuExpanded = false
+                                            courtMenuStatus = false
                                         },
                                         containerColor = Color(0xFFFFF0EB)
                                     ) {
@@ -516,7 +516,7 @@ fun SocialPageScreen(
                                                 },
                                                 onClick = {
                                                     selectedCourt = court
-                                                    courtMenuExpanded = false
+                                                    courtMenuStatus = false
                                                 }
                                             )
                                         }
@@ -545,10 +545,10 @@ fun SocialPageScreen(
                                 // if no message on the post send this error
                             } else if (message.isBlank()) {
                                 postError = "Please enter a message."
-                            } else if (chooseCourt && selectedCourt?.id == null) {
+                            } else if (courtPostBoolean && selectedCourt?.id == null) {
                                 postError = "Please select a nearby court."
                             } else {
-                                isPosting = true
+                                postingStatus = true
 
                                 // Find the username belonging to the logged-in user
                                 db.collection("users")
@@ -560,7 +560,7 @@ fun SocialPageScreen(
 
                                         if (username.isNullOrBlank()) {
                                             postError = "Could not find your username."
-                                            isPosting = false
+                                            postingStatus = false
                                         } else {
                                             // pull all the data which will be sent to firebase
                                             val post = hashMapOf(
@@ -570,7 +570,7 @@ fun SocialPageScreen(
                                                 "message" to message,
                                                 "createdAt" to FieldValue.serverTimestamp()
                                             )
-                                            if (chooseCourt) {
+                                            if (courtPostBoolean) {
                                                 selectedCourt?.let { court ->
                                                     post["courtId"] = court.id ?: ""
                                                     post["courtName"] = court.displayName ?: "Unknown Court"
@@ -583,8 +583,8 @@ fun SocialPageScreen(
                                                 .addOnSuccessListener {
                                                     postMessage = ""
                                                     postSuccess = "Your post was published!"
-                                                    isPosting = false
-                                                    chooseCourt = false
+                                                    postingStatus = false
+                                                    courtPostBoolean = false
                                                     selectedCourt = null
                                                     nearbyCourts = emptyList()
                                                 }
@@ -592,7 +592,7 @@ fun SocialPageScreen(
                                                     postError =
                                                         exception.localizedMessage
                                                             ?: "Failed to publish post."
-                                                    isPosting = false
+                                                    postingStatus = false
                                                 }
                                         }
                                     }
@@ -601,20 +601,20 @@ fun SocialPageScreen(
                                         postError =
                                             exception.localizedMessage
                                                 ?: "Failed to load your account."
-                                        isPosting = false
+                                        postingStatus = false
                                     }
                             }
                         },
                         // only enable the button if there is a post and if it not over 500 words
                         enabled = postMessage.isNotBlank() &&
                                 postMessage.length <= 500 &&
-                                !isPosting,
+                                !postingStatus,
                         modifier = Modifier.fillMaxWidth(),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF5B9808)
                         )
                     ) {
-                        Text(if (isPosting) "Posting..." else "Post")
+                        Text(if (postingStatus) "Posting..." else "Post")
                     }
                     if (postError.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(8.dp))
@@ -661,7 +661,7 @@ fun SocialPageScreen(
             // different text which is only shown based on certain conditions
             // such as loading posts, errors obtaining the feed or no posts to be shown
             when {
-                isLoadingPosts -> {
+                loadingPostsStatus -> {
                     CircularProgressIndicator(
                         color = Color(0xFF5B9808)
                     )
@@ -816,7 +816,7 @@ fun SocialPostCard(
     }
 
     // labels for which sport the post is referring to
-    val sportLabel = when (post.sport) {
+    val sportList = when (post.sport) {
         "Basketball" -> "🏀 Basketball"
         "Tennis" -> "🎾 Tennis"
         "Pickleball" -> "🏓 Pickleball"
@@ -854,7 +854,7 @@ fun SocialPostCard(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = sportLabel,
+                text = sportList,
                 fontSize = 13.sp,
                 color = Color(0xFF4A7000)
             )
@@ -969,12 +969,12 @@ fun CommentsSection(postId: String) {
     }
 
     // display to the user if the comments are loading
-    var isLoading by remember {
+    var commentLoadingStatus by remember {
         mutableStateOf(true)
     }
 
     // used to keep track of the comments and tell the path where they go in firestore
-    val commentsRef = remember(db, postId) {
+    val commentsLocation = remember(db, postId) {
         db.collection("posts")
             .document(postId)
             .collection("comments")
@@ -983,16 +983,16 @@ fun CommentsSection(postId: String) {
     // works very similarly to the code above for creating a post
     // keeps track of the information for the comment, including userid,
     // message and when it was created in order to then be stored in the firestore database
-    DisposableEffect(commentsRef) {
+    DisposableEffect(commentsLocation) {
 
-        val listener = commentsRef
+        val listener = commentsLocation
             .orderBy("createdAt", Query.Direction.ASCENDING)
             .addSnapshotListener { snapshot, error ->
 
                 if (error != null) {
                     commentError = error.localizedMessage
                         ?: "Unable to load comments."
-                    isLoading = false
+                    commentLoadingStatus = false
                     return@addSnapshotListener
                 }
 
@@ -1007,7 +1007,7 @@ fun CommentsSection(postId: String) {
                         )
                     }
 
-                    isLoading = false
+                    commentLoadingStatus = false
                 }
             }
 
@@ -1032,7 +1032,7 @@ fun CommentsSection(postId: String) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (isLoading) {
+        if (commentLoadingStatus) {
             CircularProgressIndicator(
                 color = Color(0xFF5B9808)
             )
@@ -1069,7 +1069,7 @@ fun CommentsSection(postId: String) {
 
                     TextButton(
                         onClick = {
-                            commentsRef.document(comment.id)
+                            commentsLocation.document(comment.id)
                                 .delete()
                                 .addOnFailureListener { error ->
                                     commentError =
@@ -1150,7 +1150,7 @@ fun CommentsSection(postId: String) {
                                     "createdAt" to FieldValue.serverTimestamp()
                                 )
 
-                                commentsRef.add(comment)
+                                commentsLocation.add(comment)
                                     .addOnSuccessListener {
                                         commentText = ""
                                         isSubmitting = false

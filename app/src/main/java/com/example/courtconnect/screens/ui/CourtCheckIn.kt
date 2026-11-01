@@ -34,7 +34,7 @@ fun CourtCheckInSection(courtId: String) {
 
 
     // used to point to the current player and court in the firestore database
-    val playersRef = remember(db, courtId) {
+    val currentPlayer = remember(db, courtId) {
         db.collection("courtCheckIns")
             .document(courtId)
             .collection("players")
@@ -51,7 +51,7 @@ fun CourtCheckInSection(courtId: String) {
     }
 
     // boolean used to hold whether the check in is saving or not
-    var isSaving by remember(courtId) {
+    var savingStatus by remember(courtId) {
         mutableStateOf(false)
     }
 
@@ -69,9 +69,9 @@ fun CourtCheckInSection(courtId: String) {
     }
 
     // used to check for if a player has checked in to a court and then display it on the page
-    DisposableEffect(playersRef) {
+    DisposableEffect(currentPlayer) {
 
-        val listener = playersRef
+        val listener = currentPlayer
             .addSnapshotListener { snapshot, error ->
 
                 if (error != null) {
@@ -104,16 +104,16 @@ fun CourtCheckInSection(courtId: String) {
     }
 
     // used to hold active check-in totals
-    val activeCheckIns = checkIns.filterValues { expiresAt ->
+    val currentCheckInTotal = checkIns.filterValues { expiresAt ->
         expiresAt.toDate().time > currentTime
     }
 
     // used to hold the amount of players at a given court
-    val playerCount = activeCheckIns.size
+    val playerCount = currentCheckInTotal.size
 
     // as long as the user has an ID and is checked in set this value
     val isCheckedIn = userId != null &&
-            activeCheckIns.containsKey(userId)
+            currentCheckInTotal.containsKey(userId)
 
     Column {
 
@@ -130,28 +130,28 @@ fun CourtCheckInSection(courtId: String) {
             )
 
             Button(
-                enabled = userId != null && !isSaving,
+                enabled = userId != null && !savingStatus,
                 onClick = {
 
                     if (userId != null) {
 
-                        isSaving = true
+                        savingStatus = true
                         errorMessage = ""
 
-                        val userCheckIn = playersRef.document(userId)
+                        val userCheckIn = currentPlayer.document(userId)
 
                         if (isCheckedIn) {
 
                             // Remove the user's check-in when deleted
                             userCheckIn.delete()
                                 .addOnSuccessListener {
-                                    isSaving = false
+                                    savingStatus = false
                                 }
                                 .addOnFailureListener { exception ->
                                     errorMessage =
                                         exception.localizedMessage
                                             ?: "Unable to check out."
-                                    isSaving = false
+                                    savingStatus = false
                                 }
 
                         } else {
@@ -176,13 +176,13 @@ fun CourtCheckInSection(courtId: String) {
                             // sets the current check-in based on the information from above
                             userCheckIn.set(data)
                                 .addOnSuccessListener {
-                                    isSaving = false
+                                    savingStatus = false
                                 }
                                 .addOnFailureListener { exception ->
                                     errorMessage =
                                         exception.localizedMessage
                                             ?: "Unable to check in."
-                                    isSaving = false
+                                    savingStatus = false
                                 }
                         }
                     }
@@ -197,7 +197,7 @@ fun CourtCheckInSection(courtId: String) {
             ) {
                 Text(
                     text = when {
-                        isSaving -> "Saving..."
+                        savingStatus -> "Saving..."
                         isCheckedIn -> "Check Out"
                         else -> "Check In"
                     }

@@ -3,7 +3,6 @@ package com.example.courtconnect.screens.ui
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -160,15 +159,7 @@ fun BasketballScreen(
                                 basketballCourts = response.places
 
                             }
-                            // used to catch ant failed searches or requests
-                            .addOnFailureListener { exception ->
 
-                                Log.e(
-                                    "CourtConnect",
-                                    "Court search failed",
-                                    exception
-                                )
-                            }
                     }
                 }
         }
@@ -422,16 +413,16 @@ fun calculateDistanceBetween(
     courtLocation: LatLng
 ): Float {
 
-    val results = FloatArray(1)
+    val distanceCalc = FloatArray(1)
 
     android.location.Location.distanceBetween(
         userLocation.latitude,
         userLocation.longitude,
         courtLocation.latitude,
         courtLocation.longitude,
-        results
+        distanceCalc
     )
 
-    return results[0] / 1609.344f
+    return distanceCalc[0] / 1609.344f
 }
 

@@ -35,7 +35,7 @@ fun UserAccountScreen(
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     // boolean used to tell if the user information data is loading or not
-    var isLoading by remember { mutableStateOf(true) }
+    var userInfoLoadingStatus by remember { mutableStateOf(true) }
     // holds if there is an error when pulling the data from firebase
     var errorMessage by remember { mutableStateOf("") }
 
@@ -51,7 +51,7 @@ fun UserAccountScreen(
 
         if (user == null) {
             errorMessage = "You are not logged in."
-            isLoading = false
+            userInfoLoadingStatus = false
         } else {
             db.collection("users")
                 .document(user.uid)
@@ -66,11 +66,11 @@ fun UserAccountScreen(
                     } else {
                         errorMessage = "Profile information not found."
                     }
-                    isLoading = false
+                    userInfoLoadingStatus = false
                 }
                 .addOnFailureListener {
                     errorMessage = "Unable to load profile."
-                    isLoading = false
+                    userInfoLoadingStatus = false
                 }
         }
     }
@@ -112,7 +112,7 @@ fun UserAccountScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        if (isLoading) {
+        if (userInfoLoadingStatus) {
             CircularProgressIndicator(color = Color(0xFF5B9808))
         } else if (errorMessage.isNotEmpty()) {
             Text(

@@ -69,7 +69,7 @@ fun HomeScreenWithFirebase(
     }
 
     // boolean used to know if the recent posts are loading
-    var isLoadingRecentPosts by remember {
+    var recentPostLoadingStatus by remember {
         mutableStateOf(true)
     }
 
@@ -91,7 +91,7 @@ fun HomeScreenWithFirebase(
                 if (error != null) {
                     recentPostsError = error.localizedMessage
                         ?: "Unable to load recent posts."
-                    isLoadingRecentPosts = false
+                    recentPostLoadingStatus = false
                     return@addSnapshotListener
                 }
 
@@ -108,7 +108,7 @@ fun HomeScreenWithFirebase(
                     }
 
                     recentPostsError = ""
-                    isLoadingRecentPosts = false
+                    recentPostLoadingStatus = false
                 }
             }
 
@@ -144,7 +144,7 @@ fun HomeScreenWithFirebase(
         onProfileClick = onProfileClick,
         onConnectClick = onConnectClick,
         recentPosts = recentPosts,
-        isLoadingRecentPosts = isLoadingRecentPosts,
+        recentPostLoadingStatus = recentPostLoadingStatus,
         recentPostsError = recentPostsError
     )
 }
@@ -162,7 +162,7 @@ fun HomeScreen(
     onProfileClick: () -> Unit,
     onConnectClick: () -> Unit,
     recentPosts: List<SocialPost> = emptyList(),
-    isLoadingRecentPosts: Boolean = false,
+    recentPostLoadingStatus: Boolean = false,
     recentPostsError: String = ""
 ) {
 
@@ -293,7 +293,7 @@ fun HomeScreen(
 
 
                 when {
-                    isLoadingRecentPosts -> {
+                    recentPostLoadingStatus -> {
                         Text(
                             text = "Loading recent posts...",
                             color = Color.Gray,

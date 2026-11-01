@@ -3,7 +3,6 @@ package com.example.courtconnect.screens.ui
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -160,15 +159,6 @@ fun TennisScreen(
 
                                 tennisCourts = response.places
 
-                            }
-                            // used to catch ant failed searches or requests
-                            .addOnFailureListener { exception ->
-
-                                Log.e(
-                                    "CourtConnect",
-                                    "Court search failed",
-                                    exception
-                                )
                             }
                     }
                 }

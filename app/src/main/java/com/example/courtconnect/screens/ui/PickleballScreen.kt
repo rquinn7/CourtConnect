@@ -162,15 +162,7 @@ fun PickleBallScreen(
                                 pickleballCourts = response.places
 
                             }
-                            // used to catch ant failed searches or requests
-                            .addOnFailureListener { exception ->
 
-                                Log.e(
-                                    "CourtConnect",
-                                    "Court search failed",
-                                    exception
-                                )
-                            }
                     }
                 }
         }

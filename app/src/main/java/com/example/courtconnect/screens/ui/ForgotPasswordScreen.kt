@@ -42,10 +42,10 @@ import com.google.firebase.auth.FirebaseAuth
 fun ForgotPasswordScreen(
     onBackToLogin: () -> Unit
 ) {
-    // create variables for email and message
-    // message is used to say that the forgot password email was sent
+    // create variables for email and errorMessage
+    // errorMessage is used to say that the forgot password email was sent
     var email by remember() { mutableStateOf("") }
-    var message by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf("") }
 
     // used for firebase authorization to make sure account is in firebase
     val auth = FirebaseAuth.getInstance()
@@ -96,7 +96,7 @@ fun ForgotPasswordScreen(
             value = email,
             onValueChange = {
                 email = it
-                message = ""
+                errorMessage = ""
             },
             label = { Text("Email Linked to Account") },
             shape = RoundedCornerShape(25.dp),
@@ -121,9 +121,9 @@ fun ForgotPasswordScreen(
                     .addOnCompleteListener { task ->
 
                         if (task.isSuccessful) {
-                            message = "Password reset email sent."
+                            errorMessage = "Password reset email sent."
                         } else {
-                            message = "Unable to send reset email."
+                            errorMessage = "Unable to send reset email."
                         }
                     }
             },
@@ -151,9 +151,9 @@ fun ForgotPasswordScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         // once password reset email sent, notify the user
-        if (message.isNotBlank()) {
+        if (errorMessage.isNotBlank()) {
             Text(
-                text = message,
+                text = errorMessage,
                 color = Color(0xFF335603)
             )
 
