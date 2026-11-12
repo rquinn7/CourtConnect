@@ -206,7 +206,8 @@ fun CreateAccountScreen(
             modifier = Modifier.padding(horizontal = 24.dp)
         ) {
         Text(
-            text = "Password must be at least 8 characters and include a number and special character.",
+            text = "Password must be at least 8 characters and include an uppercase " +
+                    "character, a number and special character.",
             fontSize = 16.sp,
             modifier = Modifier.wrapContentHeight(align = Alignment.CenterVertically)
         )
